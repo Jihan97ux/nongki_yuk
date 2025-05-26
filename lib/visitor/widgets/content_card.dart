@@ -1,171 +1,232 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/place_model.dart';
+import '../state/app_state.dart';
+import '../constants/app_constants.dart';
+import '../utils/error_handler.dart';
 
 class ContentCard extends StatelessWidget {
-  const ContentCard({super.key});
+  final List<Place> places;
+
+  const ContentCard({
+    super.key,
+    required this.places,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: ListView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
-        children: [
-          _buildPlaceCard(
-            context,
-            label: 'Crowded',
-            imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267',
-            title: 'Cafe A, Blok M',
-            location: 'Blok M, Jaksel',
-            rating: '4.8',
-            distance: '3.9 km',
-            price: '\$40',
-          ),
-          _buildPlaceCard(
-            context,
-            label: 'Comfy',
-            imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
-            title: 'Cafe B, Kebayoran',
-            location: 'Kebayoran',
-            rating: '4.6',
-            distance: '4 km',
-            price: '\$30',
-          ),
-          _buildPlaceCard(
-            context,
-            label: 'Comfy',
-            imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
-            title: 'Cafe C, Kemang',
-            location: 'Kemang',
-            rating: '4.7',
-            distance: '4.5 km',
-            price: '\$35',
-          ),
-        ],
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingXL + AppDimensions.paddingS,
+        ),
+        itemCount: places.length,
+        itemBuilder: (context, index) {
+          return _buildPlaceCard(context, places[index]);
+        },
       ),
     );
   }
 
-  static Widget _buildPlaceCard(
-      BuildContext context, {
-        required String label,
-        required String imageUrl,
-        required String title,
-        required String location,
-        required String rating,
-        required String distance,
-        required String price,
-      }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/selected-place',
-          arguments: {
-            'label': label,
-            'imageUrl': imageUrl,
-            'title': title,
-            'location': location,
-            'rating': rating,
-            'distance': distance,
-            'price': price,
+  Widget _buildPlaceCard(BuildContext context, Place place) {
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        final isFavorite = appState.isFavorite(place.id);
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.selectedPlace,
+              arguments: place,
+            );
           },
+          child: Container(
+            width: AppDimensions.cardWidth,
+            margin: const EdgeInsets.only(right: AppDimensions.paddingM),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadowColor,
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+              child: Stack(
+                children: [
+                  // Background Image
+                  Positioned.fill(
+                    child: NetworkImageWithError(
+                      imageUrl: place.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+
+                  // Status Label
+                  Positioned(
+                    top: AppDimensions.paddingM,
+                    left: AppDimensions.paddingM,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS,
+                        vertical: AppDimensions.paddingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getLabelColor(place.label),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                      ),
+                      child: Text(
+                        place.label,
+                        style: AppTextStyles.body2.copyWith(
+                          color: AppColors.textWhite,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Favorite Button
+                  Positioned(
+                    top: AppDimensions.paddingM,
+                    right: AppDimensions.paddingM,
+                    child: GestureDetector(
+                      onTap: () {
+                        appState.toggleFavorite(place.id);
+                        final message = isFavorite
+                            ? 'Removed from favorites'
+                            : 'Added to favorites';
+                        ErrorHandler.showSuccessSnackBar(context, message);
+                      },
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? AppColors.error : AppColors.textWhite,
+                          size: AppDimensions.iconM,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Place Information Overlay
+                  Positioned(
+                    bottom: AppDimensions.paddingXL,
+                    left: AppDimensions.paddingM,
+                    right: AppDimensions.paddingM,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppDimensions.paddingM),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            place.title,
+                            style: AppTextStyles.body1.copyWith(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+                          const SizedBox(height: AppDimensions.paddingXS),
+
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                color: AppColors.textWhite,
+                                size: AppDimensions.iconS,
+                              ),
+                              const SizedBox(width: AppDimensions.paddingXS),
+                              Expanded(
+                                child: Text(
+                                  place.location,
+                                  style: AppTextStyles.body2.copyWith(
+                                    color: AppColors.textWhite,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: AppDimensions.paddingS),
+                              const Icon(
+                                Icons.star,
+                                color: AppColors.accent,
+                                size: AppDimensions.iconS,
+                              ),
+                              const SizedBox(width: AppDimensions.paddingXS),
+                              Text(
+                                place.rating.toString(),
+                                style: AppTextStyles.body2.copyWith(
+                                  color: AppColors.textWhite,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: AppDimensions.paddingXS),
+
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.directions_walk,
+                                color: AppColors.textWhite,
+                                size: AppDimensions.iconS,
+                              ),
+                              const SizedBox(width: AppDimensions.paddingXS),
+                              Text(
+                                place.distance,
+                                style: AppTextStyles.body2.copyWith(
+                                  color: AppColors.textWhite,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                place.price,
+                                style: AppTextStyles.body1.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
-      child: Container(
-        width: 250,
-        margin: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          image: DecorationImage(
-            image: NetworkImage(imageUrl),
-            fit: BoxFit.cover,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
-              blurRadius: 12,
-              spreadRadius: 1,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: label == 'Crowded' ? Colors.red : Colors.yellow[700],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 32,
-              left: 12,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                    bottom: Radius.circular(20),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on,
-                            color: Colors.white, size: 14),
-                        const SizedBox(width: 4),
-                        Text(location,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
-                        const Spacer(),
-                        const Icon(Icons.star, color: Colors.yellow, size: 14),
-                        const SizedBox(width: 4),
-                        Text(rating,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.directions_walk,
-                            color: Colors.white, size: 14),
-                        const SizedBox(width: 4),
-                        Text(distance,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
+  }
+
+  Color _getLabelColor(String label) {
+    switch (label.toLowerCase()) {
+      case 'crowded':
+        return AppColors.crowdedLabel;
+      case 'comfy':
+        return AppColors.comfyLabel;
+      default:
+        return AppColors.primary;
+    }
   }
 }

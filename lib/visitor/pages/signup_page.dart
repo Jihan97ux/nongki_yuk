@@ -5,39 +5,47 @@ import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 import '../widgets/common/gradient_background.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
     final appState = Provider.of<AppState>(context, listen: false);
 
     try {
-      await appState.signIn(
+      await appState.signUp(
+        _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
       );
 
       if (mounted) {
         if (appState.authStatus == AuthStatus.authenticated) {
+          ErrorHandler.showSuccessSnackBar(context, 'Account created successfully!');
           Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
         } else if (appState.authError != null) {
           ErrorHandler.showErrorSnackBar(context, appState.authError!);
@@ -45,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       if (mounted) {
-        ErrorHandler.showErrorSnackBar(context, 'Login failed. Please try again.');
+        ErrorHandler.showErrorSnackBar(context, 'Failed to create account. Please try again.');
       }
     }
   }
@@ -58,25 +66,49 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXL),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: AppDimensions.paddingXL * 2),
+                const SizedBox(height: AppDimensions.paddingXL),
 
                 // Header
-                Text(
-                  AppStrings.welcomeBack,
-                  style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.textWhite,
-                  ),
+                Column(
+                  children: [
+                    Text(
+                      AppStrings.createAccount,
+                      style: AppTextStyles.heading2.copyWith(
+                        color: AppColors.textWhite,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.paddingM),
+                    Text(
+                      AppStrings.joinUs,
+                      style: AppTextStyles.subtitle2.copyWith(
+                        color: AppColors.textLight,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: AppDimensions.paddingXL),
+                const SizedBox(height: AppDimensions.paddingXL * 2),
 
                 // Form
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
+                      // Full Name Field
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          hintText: AppStrings.fullName,
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        validator: AppValidators.validateName,
+                      ),
+
+                      const SizedBox(height: AppDimensions.paddingM),
+
                       // Email Field
                       TextFormField(
                         controller: _emailController,
@@ -109,9 +141,36 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         obscureText: !_isPasswordVisible,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         validator: AppValidators.validatePassword,
-                        onFieldSubmitted: (_) => _handleLogin(),
+                      ),
+
+                      const SizedBox(height: AppDimensions.paddingM),
+
+                      // Confirm Password Field
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: InputDecoration(
+                          hintText: AppStrings.confirmPassword,
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                              });
+                            },
+                          ),
+                        ),
+                        obscureText: !_isConfirmPasswordVisible,
+                        textInputAction: TextInputAction.done,
+                        validator: (value) => AppValidators.validateConfirmPassword(
+                          _passwordController.text,
+                          value,
+                        ),
+                        onFieldSubmitted: (_) => _handleSignUp(),
                       ),
                     ],
                   ),
@@ -119,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: AppDimensions.paddingL),
 
-                // Login Button
+                // Sign Up Button
                 Consumer<AppState>(
                   builder: (context, appState, child) {
                     return SizedBox(
@@ -128,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: ElevatedButton(
                         onPressed: appState.authStatus == AuthStatus.loading
                             ? null
-                            : _handleLogin,
+                            : _handleSignUp,
                         child: appState.authStatus == AuthStatus.loading
                             ? const SizedBox(
                           width: 20,
@@ -140,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         )
-                            : const Text(AppStrings.logIn),
+                            : const Text(AppStrings.signUp),
                       ),
                     );
                   },
@@ -148,22 +207,22 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: AppDimensions.paddingM),
 
-                // Sign Up Link
+                // Sign In Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      AppStrings.dontHaveAccount,
+                      AppStrings.alreadyHaveAccount,
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textLight,
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushReplacementNamed(context, AppRoutes.signup);
+                        Navigator.pushReplacementNamed(context, AppRoutes.login);
                       },
                       child: Text(
-                        AppStrings.signUp,
+                        AppStrings.logIn,
                         style: AppTextStyles.body1.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.bold,

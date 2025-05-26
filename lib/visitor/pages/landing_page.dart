@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
+import '../widgets/common/gradient_background.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -6,83 +8,78 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF9C27B0), Color(0xFF512DA8)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Spacer(),
-            const Text(
-              'Nongki Yuk!',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Find the Perfect Hangout on\nSouth Jakarta',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+      body: GradientBackground(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXL),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+
+              // App Title
+              Text(
+                AppStrings.appName,
+                style: AppTextStyles.heading1.copyWith(
+                  color: AppColors.textWhite,
                 ),
-                onPressed: () {
-                  // TODO: Navigate to Sign Up Page
-                },
-                child: const Text(
-                  'Sign Up',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Already have an account? ',
-                  style: TextStyle(color: Colors.white70),
+
+              const SizedBox(height: AppDimensions.paddingM),
+
+              // App Tagline
+              Text(
+                AppStrings.appTagline,
+                style: AppTextStyles.subtitle2.copyWith(
+                  color: AppColors.textLight,
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/login');
+                textAlign: TextAlign.center,
+              ),
+
+              const Spacer(),
+
+              // Sign Up Button
+              SizedBox(
+                width: double.infinity,
+                height: AppDimensions.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.signup);
                   },
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(
-                      color: Colors.yellow,
-                      fontWeight: FontWeight.bold,
+                  child: const Text(AppStrings.signUp),
+                ),
+              ),
+
+              const SizedBox(height: AppDimensions.paddingM),
+
+              // Login Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    AppStrings.alreadyHaveAccount,
+                    style: AppTextStyles.body1.copyWith(
+                      color: AppColors.textLight,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-          ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.login);
+                    },
+                    child: Text(
+                      AppStrings.logIn,
+                      style: AppTextStyles.body1.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppDimensions.paddingXL),
+            ],
+          ),
         ),
       ),
     );
