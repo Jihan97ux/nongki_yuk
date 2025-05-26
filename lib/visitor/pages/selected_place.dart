@@ -23,13 +23,26 @@ class SelectedPlacePage extends StatelessWidget {
               children: [
               Padding(
               padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(
-                    imageUrl,
-                    width: double.infinity,
-                    height: 480,
-                    fit: BoxFit.cover,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(1),
+                        blurRadius: 16,
+                        spreadRadius: -5,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: 480,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
