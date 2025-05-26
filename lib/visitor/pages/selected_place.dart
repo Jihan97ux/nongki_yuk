@@ -5,29 +5,37 @@ class SelectedPlacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final title = args['title'] ?? '';
+    final location = args['location'] ?? '';
+    final imageUrl = args['imageUrl'] ?? '';
+    final rating = args['rating'] ?? '';
+    final label = args['label'] ?? '';
+    final price = args['price'] ?? '';
+    final distance = args['distance'] ?? '';
+
     return Scaffold(
       backgroundColor: const Color(0xFFFBEAFF),
       body: SafeArea(
         child: Column(
           children: [
-            // Image with overlay and back/bookmark buttons
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
+              Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 26),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
                   child: Image.network(
-                    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
+                    imageUrl,
                     width: double.infinity,
-                    height: 240,
+                    height: 480,
                     fit: BoxFit.cover,
                   ),
                 ),
+              ),
                 Positioned(
                   top: 16,
-                  left: 16,
+                  left: 45,
                   child: _buildIconButton(
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.pop(context),
@@ -35,7 +43,7 @@ class SelectedPlacePage extends StatelessWidget {
                 ),
                 Positioned(
                   top: 16,
-                  right: 16,
+                  right: 45,
                   child: _buildIconButton(
                     icon: Icons.bookmark_border,
                     onPressed: () {},
@@ -43,14 +51,14 @@ class SelectedPlacePage extends StatelessWidget {
                 ),
                 Positioned(
                   bottom: 0,
-                  left: 0,
-                  right: 0,
+                  left: 30,
+                  right: 30,
                   child: Container(
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withOpacity(0.4),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,21 +66,21 @@ class SelectedPlacePage extends StatelessWidget {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Cafe B',
-                                style: TextStyle(
+                                title,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                                  fontSize: 20,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               Text(
-                                'Kebayoran Lama',
-                                style: TextStyle(
+                                location,
+                                style: const TextStyle(
                                   color: Colors.white70,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
@@ -80,20 +88,20 @@ class SelectedPlacePage extends StatelessWidget {
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               'Price',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 12,
+                                fontSize: 14,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 12),
                             Text(
-                              '\$40',
-                              style: TextStyle(
+                              price,
+                              style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -108,9 +116,8 @@ class SelectedPlacePage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Tabs: Overview | Details
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
                 children: [
                   const Text(
@@ -134,49 +141,47 @@ class SelectedPlacePage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Info Icons
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  _InfoIcon(icon: Icons.access_time, label: '12 hours'),
-                  _InfoIcon(icon: Icons.weekend, label: 'Comfy'),
-                  _InfoIcon(icon: Icons.star, label: '4.5'),
+                children: [
+                  const _InfoIcon(icon: Icons.access_time, label: '12 hours'),
+                  _InfoIcon(icon: Icons.weekend, label: label),
+                  _InfoIcon(icon: Icons.star, label: rating),
                 ],
               ),
             ),
 
             const SizedBox(height: 16),
 
-            // Description
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Cafe ini blablabla blablabla blablabla\nblablabla...',
-                style: TextStyle(color: Colors.black54, fontSize: 14),
+                '$title adalah tempat nongkrong yang nyaman di $location. '
+                    'Cocok untuk kamu yang ingin suasana $label dengan rating $rating dan jarak sekitar $distance.',
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
             ),
 
             const Spacer(),
 
-            // Book Now Button
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(40),
               child: SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.yellow,
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
                   icon: const Icon(Icons.send),
                   label: const Text(
-                    'Book Now',
+                    'Go!',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {

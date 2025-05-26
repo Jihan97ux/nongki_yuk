@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/visitor/pages/selected_place.dart';
 import 'visitor/pages/landing_page.dart';
 import 'visitor/pages/login_page.dart';
 import 'visitor/pages/home_page.dart';
@@ -19,6 +20,7 @@ class NongkiYukApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/landing': (context) => const LandingPage(),
         '/home': (context) => const HomePage(),
+        '/selected-place': (context) => const SelectedPlacePage(),
       },
     );
   }
