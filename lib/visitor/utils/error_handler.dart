@@ -67,12 +67,12 @@ class ErrorHandler {
   }
 }
 
-// Error Widget Components
-class ErrorWidget extends StatelessWidget {
+// Custom Error Widget Components (renamed to avoid conflict)
+class CustomErrorWidget extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
 
-  const ErrorWidget({
+  const CustomErrorWidget({
     super.key,
     required this.message,
     this.onRetry,

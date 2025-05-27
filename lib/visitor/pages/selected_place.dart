@@ -1,76 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/place_model.dart';
+import '../state/app_state.dart';
+import '../constants/app_constants.dart';
+import '../utils/error_handler.dart';
 
 class SelectedPlacePage extends StatelessWidget {
   const SelectedPlacePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final title = args['title'] ?? '';
-    final location = args['location'] ?? '';
-    final imageUrl = args['imageUrl'] ?? '';
-    final rating = args['rating'] ?? '';
-    final label = args['label'] ?? '';
-    final price = args['price'] ?? '';
-    final distance = args['distance'] ?? '';
+    final place = ModalRoute.of(context)!.settings.arguments as Place;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBEAFF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             Stack(
               children: [
-              Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(1),
-                        blurRadius: 16,
-                        spreadRadius: -5,
-                        offset: const Offset(0, 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          blurRadius: 16,
+                          spreadRadius: -5,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+                      child: NetworkImageWithError(
+                        imageUrl: place.imageUrl,
+                        width: double.infinity,
+                        height: AppDimensions.cardImageHeight,
+                        fit: BoxFit.cover,
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      height: 480,
-                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-              ),
                 Positioned(
-                  top: 16,
-                  left: 45,
+                  top: AppDimensions.paddingM,
+                  left: AppDimensions.paddingL + AppDimensions.paddingM,
                   child: _buildIconButton(
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
                 Positioned(
-                  top: 16,
-                  right: 45,
-                  child: _buildIconButton(
-                    icon: Icons.bookmark_border,
-                    onPressed: () {},
+                  top: AppDimensions.paddingM,
+                  right: AppDimensions.paddingL + AppDimensions.paddingM,
+                  child: Consumer<AppState>(
+                    builder: (context, appState, child) {
+                      final isFavorite = appState.isFavorite(place.id);
+                      return _buildIconButton(
+                        icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                        onPressed: () {
+                          appState.toggleFavorite(place.id);
+                          final message = isFavorite
+                              ? 'Removed from favorites'
+                              : 'Added to favorites';
+                          ErrorHandler.showSuccessSnackBar(context, message);
+                        },
+                      );
+                    },
                   ),
                 ),
                 Positioned(
                   bottom: 0,
-                  left: 30,
-                  right: 30,
+                  left: AppDimensions.paddingL + AppDimensions.paddingS,
+                  right: AppDimensions.paddingL + AppDimensions.paddingS,
                   child: Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                       color: Colors.black.withOpacity(0.4),
                     ),
                     child: Row(
@@ -81,20 +90,29 @@ class SelectedPlacePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
+                                place.title,
+                                style: AppTextStyles.heading4.copyWith(
+                                  color: AppColors.textWhite,
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                location,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 16,
-                                ),
+                              const SizedBox(height: AppDimensions.paddingS),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on,
+                                    color: AppColors.textWhite,
+                                    size: AppDimensions.iconS,
+                                  ),
+                                  const SizedBox(width: AppDimensions.paddingXS),
+                                  Expanded(
+                                    child: Text(
+                                      place.location,
+                                      style: AppTextStyles.body1.copyWith(
+                                        color: AppColors.textLight,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -102,19 +120,17 @@ class SelectedPlacePage extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text(
-                              'Price',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
+                            Text(
+                              AppStrings.price,
+                              style: AppTextStyles.body2.copyWith(
+                                color: AppColors.textLight,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppDimensions.paddingS),
                             Text(
-                              price,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
+                              place.price,
+                              style: AppTextStyles.heading4.copyWith(
+                                color: AppColors.accent,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -127,78 +143,142 @@ class SelectedPlacePage extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.paddingL),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingS,
+              ),
               child: Row(
                 children: [
-                  const Text(
-                    'Overview',
-                    style: TextStyle(
+                  Text(
+                    AppStrings.overview,
+                    style: AppTextStyles.subtitle1.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: AppDimensions.paddingL),
                   Text(
-                    'Details',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.purple.shade200,
+                    AppStrings.details,
+                    style: AppTextStyles.subtitle1.copyWith(
+                      color: AppColors.primary.withOpacity(0.6),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.paddingM),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingS,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const _InfoIcon(icon: Icons.access_time, label: '12 hours'),
-                  _InfoIcon(icon: Icons.weekend, label: label),
-                  _InfoIcon(icon: Icons.star, label: rating),
+                  _InfoIcon(
+                    icon: Icons.access_time,
+                    label: place.operatingHours,
+                  ),
+                  _InfoIcon(
+                    icon: Icons.local_offer,
+                    label: place.label,
+                  ),
+                  _InfoIcon(
+                    icon: Icons.star,
+                    label: place.rating.toString(),
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.paddingM),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                '$title adalah tempat nongkrong yang nyaman di $location. '
-                    'Cocok untuk kamu yang ingin suasana $label dengan rating $rating dan jarak sekitar $distance.',
-                style: const TextStyle(color: Colors.black54, fontSize: 14),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        place.description.isNotEmpty
+                            ? place.description
+                            : '${place.title} adalah tempat nongkrong yang nyaman di ${place.location}. '
+                            'Cocok untuk kamu yang ingin suasana ${place.label.toLowerCase()} dengan rating ${place.rating} dan jarak sekitar ${place.distance}.',
+                        style: AppTextStyles.body1.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                      if (place.amenities.isNotEmpty) ...[
+                        const SizedBox(height: AppDimensions.paddingL),
+                        Text(
+                          'Amenities',
+                          style: AppTextStyles.subtitle1.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.paddingS),
+                        Wrap(
+                          spacing: AppDimensions.paddingS,
+                          runSpacing: AppDimensions.paddingS,
+                          children: place.amenities.map((amenity) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppDimensions.paddingM,
+                                vertical: AppDimensions.paddingS,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Text(
+                                amenity,
+                                style: AppTextStyles.body2.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
 
-            const Spacer(),
-
             Padding(
-              padding: const EdgeInsets.all(40),
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: AppDimensions.buttonHeightLarge,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.yellow,
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: AppColors.textPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                     ),
                   ),
                   icon: const Icon(Icons.send),
-                  label: const Text(
-                    'Go!',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  label: Text(
+                    AppStrings.go,
+                    style: AppTextStyles.button,
                   ),
                   onPressed: () {
-                    // TODO: implement booking logic
+                    ErrorHandler.showSuccessSnackBar(
+                      context,
+                      'Navigate to ${place.title}',
+                    );
                   },
                 ),
               ),
@@ -237,12 +317,36 @@ class _InfoIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey.shade600, size: 20),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: Colors.black87)),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.paddingS,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.primary, size: AppDimensions.iconS),
+          const SizedBox(width: AppDimensions.paddingXS),
+          Text(
+            label,
+            style: AppTextStyles.body2.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

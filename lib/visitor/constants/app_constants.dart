@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFF5D3FD3);
-  static const Color secondary = Color(0xFF2E2380);
-  static const Color accent = Color(0xFFFFC107); // Yellow
+  static const Color primary = Color(0xFF7B1FA2); // Dark purple
+  static const Color secondary = Color(0xFFB39DDB); // Light purple
+  static const Color accent = Color(0xFFFFD54F); // Yellow
   static const Color background = Color(0xFFFBEAFF);
   static const Color surface = Colors.white;
   static const Color error = Colors.red;
 
   // Gradient colors
-  static const Color gradientPrimary = Color(0xFF9C27B0);
-  static const Color gradientSecondary = Color(0xFF512DA8);
+  static const Color gradientPrimary = Color(0xFFB39DDB); // Light purple
+  static const Color gradientSecondary = Color(0xFF7B1FA2); // Dark purple
 
   // Text colors
   static const Color textPrimary = Colors.black87;
   static const Color textSecondary = Colors.black54;
   static const Color textLight = Colors.white70;
   static const Color textWhite = Colors.white;
+
+  // Input field colors
+  static const Color inputFill = Color(0xFFE0E0E0); // Light grey for input fields
+  static const Color inputHint = Colors.grey;
 
   // Status colors
   static const Color crowdedLabel = Colors.red;

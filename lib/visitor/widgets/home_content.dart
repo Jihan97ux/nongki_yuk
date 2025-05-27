@@ -133,7 +133,7 @@ class _HomeContentState extends State<HomeContent> {
 
     if (appState.placesError != null) {
       return Expanded(
-        child: ErrorWidget(
+        child: CustomErrorWidget(
           message: appState.placesError!,
           onRetry: () => appState.refreshPlaces(),
         ),

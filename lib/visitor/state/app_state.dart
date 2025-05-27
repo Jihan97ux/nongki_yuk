@@ -145,17 +145,18 @@ class AppState extends ChangeNotifier {
   void _filterPlaces() {
     switch (_selectedFilter) {
       case PlaceFilter.mostViewed:
-        _filteredPlaces = List.from(_places)..sort((a, b) => b.rating.compareTo(a.rating));
+        _filteredPlaces = List<Place>.from(_places)..sort((a, b) => b.rating.compareTo(a.rating));
         break;
       case PlaceFilter.nearby:
-        _filteredPlaces = List.from(_places)..sort((a, b) {
+        _filteredPlaces = List<Place>.from(_places)..sort((a, b) {
           double distanceA = double.tryParse(a.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
           double distanceB = double.tryParse(b.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
           return distanceA.compareTo(distanceB);
         });
         break;
       case PlaceFilter.latest:
-        _filteredPlaces = List.from(_places).reversed.toList();
+        final reversedList = _places.reversed.toList();
+        _filteredPlaces = List<Place>.from(reversedList);
         break;
     }
   }
@@ -214,4 +215,4 @@ class AppState extends ChangeNotifier {
   void refreshPlaces() {
     loadPlaces();
   }
-}
+} 

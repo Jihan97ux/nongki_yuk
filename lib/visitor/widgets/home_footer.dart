@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
+import '../utils/error_handler.dart';
 
 class HomeFooter extends StatelessWidget {
   const HomeFooter({super.key});
