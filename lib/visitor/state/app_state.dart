@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/place_model.dart';
+import '../service/place_service.dart';
+import 'package:geolocator/geolocator.dart';
+import '../service/user_position_service.dart';
+import '../service/distance_service.dart';
 
 enum AuthStatus { authenticated, unauthenticated, loading }
 enum PlaceFilter { mostViewed, nearby, latest }
@@ -217,17 +221,34 @@ class AppState extends ChangeNotifier {
 
   // Places methods
   Future<void> loadPlaces() async {
+    if (_isLoadingPlaces) return;
     _isLoadingPlaces = true;
     _placesError = null;
     notifyListeners();
 
     try {
       // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 500));
+      print('Getting user position...');
+      final Position position = await UserPositionService.getCurrentPosition();
 
-      _places = Place.getSamplePlaces();
+      print('Fetching cafes from Firebase...');
+      final rawPlaces = await PlaceService.fetchCafesFromFirebase();
+
+      _places = [];
+      for (final place in rawPlaces) {
+        print('Calculating distances...');
+        final distance = await DistanceService.getDistance(
+          userLat: position.latitude,
+          userLng: position.longitude,
+          placeLat: place.location.lat,
+          placeLng: place.location.lng,
+        );
+        _places.add(place.copyWith(distance: distance));
+      }
       _filterPlaces();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Error in loadPlaces: $e');
+      print(stackTrace);
       _placesError = e.toString();
     }
 
@@ -269,7 +290,7 @@ class AppState extends ChangeNotifier {
     } else {
       List<Place> results = _places.where((place) {
         return place.title.toLowerCase().contains(query.toLowerCase()) ||
-            place.location.toLowerCase().contains(query.toLowerCase()) ||
+            place.address.toLowerCase().contains(query.toLowerCase()) ||
             place.label.toLowerCase().contains(query.toLowerCase());
       }).toList();
 

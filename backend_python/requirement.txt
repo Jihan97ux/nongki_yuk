@@ -3,3 +3,4 @@ pandas
 apify-client
 dotenv
 requests
+firebase_admin

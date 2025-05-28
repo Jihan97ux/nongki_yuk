@@ -328,7 +328,7 @@ class _RecentPlacesPageState extends State<RecentPlacesPage> with TickerProvider
                                   const SizedBox(width: AppDimensions.paddingXS),
                                   Expanded(
                                     child: Text(
-                                      place.location,
+                                      place.address,
                                       style: AppTextStyles.body2.copyWith(
                                         color: AppColors.textSecondary,
                                       ),

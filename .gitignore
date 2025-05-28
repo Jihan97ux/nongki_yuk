@@ -45,3 +45,5 @@ app.*.map.json
 /android/app/release
 /backend_python/serviceAccountKey.json
 backend_python/serviceAccountKey.json
+.env
+backend_python/.env

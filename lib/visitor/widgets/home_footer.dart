@@ -236,7 +236,7 @@ class HomeFooter extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              place.location,
+                              place.address,
                               style: AppTextStyles.body2.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -396,7 +396,7 @@ class HomeFooter extends StatelessWidget {
                           ),
                         ),
                         subtitle: Text(
-                          place.location,
+                          place.address,
                           style: AppTextStyles.body2.copyWith(
                             color: AppColors.textSecondary,
                           ),

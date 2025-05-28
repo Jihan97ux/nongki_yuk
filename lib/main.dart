@@ -20,8 +20,11 @@ import 'visitor/state/app_state.dart';
 import 'visitor/constants/app_constants.dart';
 import 'visitor/theme/app_theme.dart';
 import 'visitor/utils/error_handler.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -39,10 +42,9 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
 
-            // Initial route based on authentication status
-            initialRoute: appState.authStatus == AuthStatus.authenticated
-                ? AppRoutes.home
-                : AppRoutes.landing,
+            home: appState.authStatus == AuthStatus.authenticated
+                ? const HomePage()
+                : const LandingPage(),
 
             // Fixed routing configuration
             routes: {

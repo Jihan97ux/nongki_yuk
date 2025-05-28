@@ -665,7 +665,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           ),
                         ),
                         subtitle: Text(
-                          place.location,
+                          place.address,
                           style: AppTextStyles.body2.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -810,7 +810,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              place.location,
+                              place.address,
                               style: AppTextStyles.body2.copyWith(
                                 color: AppColors.textSecondary,
                               ),

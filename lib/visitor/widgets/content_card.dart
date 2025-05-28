@@ -160,7 +160,7 @@ class ContentCard extends StatelessWidget {
                               const SizedBox(width: AppDimensions.paddingXS),
                               Expanded(
                                 child: Text(
-                                  place.location,
+                                  place.address,
                                   style: AppTextStyles.body2.copyWith(
                                     color: AppColors.textWhite,
                                   ),
@@ -202,7 +202,7 @@ class ContentCard extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '\$${place.price}',
+                                '${place.price}',
                                 style: AppTextStyles.body1.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.bold,

@@ -132,7 +132,7 @@ class SelectedPlacePage extends StatelessWidget {
                                   const SizedBox(width: AppDimensions.paddingXS),
                                   Expanded(
                                     child: Text(
-                                      currentPlace.location,
+                                      currentPlace.address,
                                       style: AppTextStyles.body1.copyWith(
                                         color: AppColors.textLight,
                                       ),
@@ -422,7 +422,7 @@ class SelectedPlacePage extends StatelessWidget {
                   const SizedBox(width: AppDimensions.paddingXS),
                   Expanded(
                     child: Text(
-                      place.location,
+                      place.address,
                       style: AppTextStyles.body2,
                     ),
                   ),
