@@ -91,6 +91,11 @@ class Place {
     );
   }
 
+  @override
+  String toString() {
+    return 'Place{id: $id, title: $title, location: $location, rating: $rating, price: $price, label: $label}';
+  }
+
   // Sample data with more variety
   static List<Place> getSamplePlaces() {
     return [
