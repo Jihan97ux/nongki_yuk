@@ -47,3 +47,4 @@ app.*.map.json
 backend_python/serviceAccountKey.json
 .env
 backend_python/.env
+web/index.html
