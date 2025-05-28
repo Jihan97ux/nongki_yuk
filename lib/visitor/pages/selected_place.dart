@@ -256,36 +256,131 @@ class SelectedPlacePage extends StatelessWidget {
               ),
             ),
 
+            // Updated Go Button with Recent Places tracking
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              child: SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeightLarge,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: AppColors.textPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: AppDimensions.buttonHeightLarge,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                        ),
+                      ),
+                      icon: const Icon(Icons.send),
+                      label: Text(
+                        AppStrings.go,
+                        style: AppTextStyles.button,
+                      ),
+                      onPressed: () {
+                        // Add to recent places when Go button is clicked
+                        appState.addToRecentPlaces(place);
+
+                        // Show success message
+                        ErrorHandler.showSuccessSnackBar(
+                          context,
+                          '🎉 Have fun at ${place.title}!',
+                        );
+
+                        // Simulate navigation to the place
+                        _showNavigationDialog(context, place);
+                      },
                     ),
-                  ),
-                  icon: const Icon(Icons.send),
-                  label: Text(
-                    AppStrings.go,
-                    style: AppTextStyles.button,
-                  ),
-                  onPressed: () {
-                    ErrorHandler.showSuccessSnackBar(
-                      context,
-                      'Navigate to ${place.title}',
-                    );
-                  },
-                ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showNavigationDialog(BuildContext context, Place place) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.navigation, color: AppColors.primary),
+              const SizedBox(width: AppDimensions.paddingS),
+              Text(
+                'Navigate to ${place.title}',
+                style: AppTextStyles.heading4,
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Choose your preferred navigation app:',
+                style: AppTextStyles.body1.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.paddingM),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: AppColors.primary, size: 16),
+                  const SizedBox(width: AppDimensions.paddingXS),
+                  Expanded(
+                    child: Text(
+                      place.location,
+                      style: AppTextStyles.body2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.paddingXS),
+              Row(
+                children: [
+                  const Icon(Icons.directions_walk, color: AppColors.primary, size: 16),
+                  const SizedBox(width: AppDimensions.paddingXS),
+                  Text(
+                    place.distance,
+                    style: AppTextStyles.body2,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ErrorHandler.showSuccessSnackBar(
+                  context,
+                  'Opening Google Maps... 🗺️',
+                );
+              },
+              icon: const Icon(Icons.map),
+              label: const Text('Google Maps'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

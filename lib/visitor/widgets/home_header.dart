@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import '../widgets/advanced_search_modal.dart';
 
 class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
@@ -27,6 +28,10 @@ class _HomeHeaderState extends State<HomeHeader> {
   void _clearSearch() {
     _searchController.clear();
     Provider.of<AppState>(context, listen: false).clearSearch();
+  }
+
+  void _showAdvancedSearch() {
+    AdvancedSearchModal.show(context);
   }
 
   @override
@@ -77,7 +82,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                   final user = appState.currentUser;
                   return GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to profile page
+                      Navigator.pushNamed(context, AppRoutes.profile);
                     },
                     child: NetworkImageWithError(
                       imageUrl: user?.profileImageUrl ?? 'https://i.pravatar.cc/100',
@@ -93,23 +98,130 @@ class _HomeHeaderState extends State<HomeHeader> {
 
           const SizedBox(height: AppDimensions.paddingL + AppDimensions.paddingS),
 
-          // Search Field
+          // Search Field with Advanced Search Button
           Consumer<AppState>(
             builder: (context, appState, child) {
-              return TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchPlaces,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: appState.searchQuery.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: _clearSearch,
-                  )
-                      : const Icon(Icons.tune),
+              return Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                onChanged: _onSearchChanged,
-                textInputAction: TextInputAction.search,
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: AppStrings.searchPlaces,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Clear button when searching
+                        if (appState.searchQuery.isNotEmpty)
+                          IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: _clearSearch,
+                          ),
+
+                        // Advanced search button
+                        Container(
+                          margin: const EdgeInsets.only(right: AppDimensions.paddingXS),
+                          child: IconButton(
+                            icon: Stack(
+                              children: [
+                                const Icon(Icons.tune),
+                                // Active indicator
+                                if (appState.searchFilters.hasActiveFilters)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.accent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            onPressed: _showAdvancedSearch,
+                            tooltip: 'Advanced Search',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onChanged: _onSearchChanged,
+                  textInputAction: TextInputAction.search,
+                ),
+              );
+            },
+          ),
+
+          // Active filters indicator
+          Consumer<AppState>(
+            builder: (context, appState, child) {
+              if (!appState.isAdvancedSearchActive) return const SizedBox();
+
+              return Container(
+                margin: const EdgeInsets.only(top: AppDimensions.paddingS),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS,
+                        vertical: AppDimensions.paddingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.filter_alt,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: AppDimensions.paddingXS),
+                          Text(
+                            'Advanced filters active',
+                            style: AppTextStyles.body2.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.paddingS),
+                    GestureDetector(
+                      onTap: () {
+                        appState.clearAdvancedSearch();
+                        ErrorHandler.showSuccessSnackBar(
+                          context,
+                          'Advanced filters cleared',
+                        );
+                      },
+                      child: Text(
+                        'Clear',
+                        style: AppTextStyles.body2.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
