@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color primary = Color(0xFF7B1FA2); // Dark purple
-  static const Color secondary = Color(0xFFB39DDB); // Light purple
+  static const Color secondary = Color(0xFF2E2380); // Light purple
   static const Color accent = Color(0xFFFFD54F); // Yellow
   static const Color background = Color(0xFFFBEAFF);
   static const Color surface = Colors.white;
@@ -152,11 +152,29 @@ class AppStrings {
   static const String crowded = 'Crowded';
   static const String comfy = 'Comfy';
 
+  // Search
+  static const String advancedSearch = 'Advanced Search';
+  static const String searchResults = 'Search Results';
+  static const String noSearchResults = 'No places found';
+  static const String clearFilters = 'Clear Filters';
+
+  // Profile
+  static const String profile = 'Profile';
+  static const String editProfile = 'Edit Profile';
+  static const String recentPlaces = 'Recent Places';
+  static const String favorites = 'Favorites';
+  static const String settings = 'Settings';
+  static const String signOut = 'Sign Out';
+
   // Common
   static const String loading = 'Loading...';
   static const String error = 'Something went wrong';
   static const String noData = 'No data available';
   static const String retry = 'Retry';
+  static const String save = 'Save';
+  static const String cancel = 'Cancel';
+  static const String delete = 'Delete';
+  static const String confirm = 'Confirm';
 }
 
 class AppRoutes {
@@ -168,6 +186,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String favorites = '/favorites';
   static const String search = '/search';
+  static const String recentPlaces = '/recent-places';
 }
 
 // Input Validation
@@ -211,4 +230,21 @@ class AppValidators {
     }
     return null;
   }
+}
+
+// Animation Durations
+class AppAnimations {
+  static const Duration fast = Duration(milliseconds: 200);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 500);
+  static const Duration verySlow = Duration(milliseconds: 800);
+}
+
+// App Configuration
+class AppConfig {
+  static const String version = '1.0.0';
+  static const String buildVersion = '1.0.0+1';
+  static const bool isDevelopment = true;
+  static const int maxRecentPlaces = 20;
+  static const int searchResultsLimit = 50;
 }

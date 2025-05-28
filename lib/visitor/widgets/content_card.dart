@@ -4,6 +4,7 @@ import '../models/place_model.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import '../pages/selected_place.dart';
 
 class ContentCard extends StatelessWidget {
   final List<Place> places;
@@ -37,11 +38,13 @@ class ContentCard extends StatelessWidget {
 
         return GestureDetector(
           onTap: () {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.selectedPlace,
-              arguments: place,
-            );
+            // Debug: Print navigation info
+            print('DEBUG ContentCard: Tapping place: ${place.title}');
+            print('DEBUG ContentCard: Place ID: ${place.id}');
+            print('DEBUG ContentCard: Starting direct navigation...');
+
+            // Direct navigation with MaterialPageRoute
+            _navigateToPlaceDirect(context, place);
           },
           child: Container(
             width: AppDimensions.cardWidth,
@@ -98,6 +101,7 @@ class ContentCard extends StatelessWidget {
                     right: AppDimensions.paddingM,
                     child: GestureDetector(
                       onTap: () {
+                        print('DEBUG ContentCard: Toggling favorite for: ${place.title}');
                         appState.toggleFavorite(place.id);
                         final message = isFavorite
                             ? 'Removed from favorites'
@@ -198,7 +202,7 @@ class ContentCard extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                place.price,
+                                '\$${place.price}',
                                 style: AppTextStyles.body1.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.bold,
@@ -217,6 +221,64 @@ class ContentCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Direct navigation method using MaterialPageRoute
+  void _navigateToPlaceDirect(BuildContext context, Place place) {
+    try {
+      print('DEBUG ContentCard: Direct navigation to SelectedPlacePage');
+      print('DEBUG ContentCard: Place object: $place');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SelectedPlacePage(place: place),
+          settings: RouteSettings(
+            name: AppRoutes.selectedPlace,
+            arguments: place,
+          ),
+        ),
+      ).then((value) {
+        print('DEBUG ContentCard: Navigation completed successfully');
+      }).catchError((error) {
+        print('DEBUG ContentCard: Navigation error: $error');
+        ErrorHandler.showErrorSnackBar(
+          context,
+          'Failed to open place details: $error',
+        );
+      });
+
+    } catch (e) {
+      print('DEBUG ContentCard: Exception during navigation: $e');
+      ErrorHandler.showErrorSnackBar(
+        context,
+        'Failed to open place details: $e',
+      );
+    }
+  }
+
+  // Fallback navigation method
+  void _navigateToPlace(BuildContext context, Place place) {
+    try {
+      print('DEBUG ContentCard: Fallback navigation via pushNamed');
+
+      Navigator.pushNamed(
+        context,
+        AppRoutes.selectedPlace,
+        arguments: place,
+      ).then((value) {
+        print('DEBUG ContentCard: Fallback navigation completed');
+      }).catchError((error) {
+        print('DEBUG ContentCard: Fallback navigation error: $error');
+        // Try direct method if named route fails
+        _navigateToPlaceDirect(context, place);
+      });
+
+    } catch (e) {
+      print('DEBUG ContentCard: Exception in fallback navigation: $e');
+      // Try direct method as last resort
+      _navigateToPlaceDirect(context, place);
+    }
   }
 
   Color _getLabelColor(String label) {

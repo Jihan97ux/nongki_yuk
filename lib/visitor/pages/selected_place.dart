@@ -6,11 +6,37 @@ import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 
 class SelectedPlacePage extends StatelessWidget {
-  const SelectedPlacePage({super.key});
+  final Place? place; // Optional constructor parameter
+
+  const SelectedPlacePage({super.key, this.place});
 
   @override
   Widget build(BuildContext context) {
-    final place = ModalRoute.of(context)!.settings.arguments as Place;
+    // Try multiple ways to get the Place object
+    Place? currentPlace = place; // From constructor
+
+    if (currentPlace == null) {
+      // Try to get from route arguments
+      final route = ModalRoute.of(context);
+      final arguments = route?.settings.arguments;
+
+      print('DEBUG SelectedPlace: Route name: ${route?.settings.name}');
+      print('DEBUG SelectedPlace: Arguments: $arguments');
+      print('DEBUG SelectedPlace: Arguments type: ${arguments.runtimeType}');
+
+      if (arguments != null && arguments is Place) {
+        currentPlace = arguments;
+        print('DEBUG SelectedPlace: Got Place from route arguments');
+      }
+    }
+
+    // If still no place, try to get from app state (fallback)
+    if (currentPlace == null) {
+      print('DEBUG SelectedPlace: No Place found, showing error');
+      return _buildErrorPage(context, 'Place data not found');
+    }
+
+    print('DEBUG SelectedPlace: Successfully loaded place: ${currentPlace.title}');
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -36,7 +62,7 @@ class SelectedPlacePage extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
                       child: NetworkImageWithError(
-                        imageUrl: place.imageUrl,
+                        imageUrl: currentPlace.imageUrl,
                         width: double.infinity,
                         height: AppDimensions.cardImageHeight,
                         fit: BoxFit.cover,
@@ -57,11 +83,11 @@ class SelectedPlacePage extends StatelessWidget {
                   right: AppDimensions.paddingL + AppDimensions.paddingM,
                   child: Consumer<AppState>(
                     builder: (context, appState, child) {
-                      final isFavorite = appState.isFavorite(place.id);
+                      final isFavorite = appState.isFavorite(currentPlace!.id);
                       return _buildIconButton(
                         icon: isFavorite ? Icons.favorite : Icons.favorite_border,
                         onPressed: () {
-                          appState.toggleFavorite(place.id);
+                          appState.toggleFavorite(currentPlace!.id);
                           final message = isFavorite
                               ? 'Removed from favorites'
                               : 'Added to favorites';
@@ -90,7 +116,7 @@ class SelectedPlacePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                place.title,
+                                currentPlace.title,
                                 style: AppTextStyles.heading4.copyWith(
                                   color: AppColors.textWhite,
                                 ),
@@ -106,7 +132,7 @@ class SelectedPlacePage extends StatelessWidget {
                                   const SizedBox(width: AppDimensions.paddingXS),
                                   Expanded(
                                     child: Text(
-                                      place.location,
+                                      currentPlace.location,
                                       style: AppTextStyles.body1.copyWith(
                                         color: AppColors.textLight,
                                       ),
@@ -128,7 +154,7 @@ class SelectedPlacePage extends StatelessWidget {
                             ),
                             const SizedBox(height: AppDimensions.paddingS),
                             Text(
-                              place.price,
+                              '\$${currentPlace.price}',
                               style: AppTextStyles.heading4.copyWith(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.bold,
@@ -181,15 +207,15 @@ class SelectedPlacePage extends StatelessWidget {
                 children: [
                   _InfoIcon(
                     icon: Icons.access_time,
-                    label: place.operatingHours,
+                    label: currentPlace.operatingHours,
                   ),
                   _InfoIcon(
                     icon: Icons.local_offer,
-                    label: place.label,
+                    label: currentPlace.label,
                   ),
                   _InfoIcon(
                     icon: Icons.star,
-                    label: place.rating.toString(),
+                    label: currentPlace.rating.toString(),
                   ),
                 ],
               ),
@@ -205,16 +231,16 @@ class SelectedPlacePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        place.description.isNotEmpty
-                            ? place.description
-                            : '${place.title} adalah tempat nongkrong yang nyaman di ${place.location}. '
-                            'Cocok untuk kamu yang ingin suasana ${place.label.toLowerCase()} dengan rating ${place.rating} dan jarak sekitar ${place.distance}.',
+                        currentPlace.description.isNotEmpty
+                            ? currentPlace.description
+                            : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.location}. '
+                            'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
                         style: AppTextStyles.body1.copyWith(
                           color: AppColors.textSecondary,
                           height: 1.5,
                         ),
                       ),
-                      if (place.amenities.isNotEmpty) ...[
+                      if (currentPlace.amenities.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.paddingL),
                         Text(
                           'Amenities',
@@ -226,7 +252,7 @@ class SelectedPlacePage extends StatelessWidget {
                         Wrap(
                           spacing: AppDimensions.paddingS,
                           runSpacing: AppDimensions.paddingS,
-                          children: place.amenities.map((amenity) {
+                          children: currentPlace.amenities.map((amenity) {
                             return Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppDimensions.paddingM,
@@ -256,36 +282,191 @@ class SelectedPlacePage extends StatelessWidget {
               ),
             ),
 
+            // Updated Go Button with Recent Places tracking
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              child: SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeightLarge,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: AppColors.textPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: AppDimensions.buttonHeightLarge,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                        ),
+                      ),
+                      icon: const Icon(Icons.send),
+                      label: Text(
+                        AppStrings.go,
+                        style: AppTextStyles.button,
+                      ),
+                      onPressed: () {
+                        // Add to recent places when Go button is clicked
+                        appState.addToRecentPlaces(currentPlace!);
+
+                        // Show success message
+                        ErrorHandler.showSuccessSnackBar(
+                          context,
+                          '🎉 Have fun at ${currentPlace.title}!',
+                        );
+
+                        // Simulate navigation to the place
+                        _showNavigationDialog(context, currentPlace);
+                      },
                     ),
-                  ),
-                  icon: const Icon(Icons.send),
-                  label: Text(
-                    AppStrings.go,
-                    style: AppTextStyles.button,
-                  ),
-                  onPressed: () {
-                    ErrorHandler.showSuccessSnackBar(
-                      context,
-                      'Navigate to ${place.title}',
-                    );
-                  },
-                ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // Error page widget
+  Widget _buildErrorPage(BuildContext context, String errorMessage) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Error'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingXL),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 80,
+                color: AppColors.error,
+              ),
+              const SizedBox(height: AppDimensions.paddingL),
+              Text(
+                'Oops! Something went wrong',
+                style: AppTextStyles.heading4,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppDimensions.paddingM),
+              Text(
+                errorMessage,
+                style: AppTextStyles.body1.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppDimensions.paddingXL),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                        (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.home),
+                label: const Text('Back to Home'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNavigationDialog(BuildContext context, Place place) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.navigation, color: AppColors.primary),
+              const SizedBox(width: AppDimensions.paddingS),
+              Expanded(
+                child: Text(
+                  'Navigate to ${place.title}',
+                  style: AppTextStyles.heading4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Choose your preferred navigation app:',
+                style: AppTextStyles.body1.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.paddingM),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: AppColors.primary, size: 16),
+                  const SizedBox(width: AppDimensions.paddingXS),
+                  Expanded(
+                    child: Text(
+                      place.location,
+                      style: AppTextStyles.body2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.paddingXS),
+              Row(
+                children: [
+                  const Icon(Icons.directions_walk, color: AppColors.primary, size: 16),
+                  const SizedBox(width: AppDimensions.paddingXS),
+                  Text(
+                    place.distance,
+                    style: AppTextStyles.body2,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ErrorHandler.showSuccessSnackBar(
+                  context,
+                  'Opening Google Maps... 🗺️',
+                );
+              },
+              icon: const Icon(Icons.map),
+              label: const Text('Google Maps'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
