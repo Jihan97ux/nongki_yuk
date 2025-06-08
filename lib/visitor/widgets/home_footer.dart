@@ -94,8 +94,8 @@ class HomeFooter extends StatelessWidget {
               label: 'Favorites',
             ),
             const BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Profile',
+              icon: Icon(Icons.settings),
+              label: 'Settings',
             ),
           ],
         );
@@ -119,8 +119,8 @@ class HomeFooter extends StatelessWidget {
         _showFavorites(context);
         break;
       case 3:
-      // Navigate to profile
-        Navigator.pushNamed(context, AppRoutes.profile);
+      // Navigate to settings instead of profile
+        Navigator.pushNamed(context, AppRoutes.settings);
         break;
     }
   }

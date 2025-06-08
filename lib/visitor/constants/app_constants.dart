@@ -187,6 +187,7 @@ class AppRoutes {
   static const String favorites = '/favorites';
   static const String search = '/search';
   static const String recentPlaces = '/recent-places';
+  static const String settings = '/settings'; // Added settings route
 }
 
 // Input Validation

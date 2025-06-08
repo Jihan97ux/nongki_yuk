@@ -82,13 +82,38 @@ class _HomeHeaderState extends State<HomeHeader> {
                   final user = appState.currentUser;
                   return GestureDetector(
                     onTap: () {
+                      // Navigate to profile page when profile image is tapped
                       Navigator.pushNamed(context, AppRoutes.profile);
                     },
-                    child: NetworkImageWithError(
-                      imageUrl: user?.profileImageUrl ?? 'https://i.pravatar.cc/100',
-                      width: AppDimensions.avatarM,
-                      height: AppDimensions.avatarM,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusCircle),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: AppDimensions.avatarM / 2,
+                        backgroundColor: AppColors.primary,
+                        backgroundImage: user?.profileImageUrl != null
+                            ? NetworkImage(user!.profileImageUrl!)
+                            : null,
+                        child: user?.profileImageUrl == null
+                            ? Text(
+                          user?.name.isNotEmpty == true
+                              ? user!.name[0].toUpperCase()
+                              : 'U',
+                          style: AppTextStyles.subtitle1.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                            : null,
+                      ),
                     ),
                   );
                 },

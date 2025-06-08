@@ -9,6 +9,7 @@ import 'visitor/pages/home_page.dart';
 import 'visitor/pages/selected_place.dart';
 import 'visitor/pages/profile_page.dart';
 import 'visitor/pages/recent_places_page.dart';
+import 'visitor/pages/settings_page.dart'; // Added settings page import
 
 //Import model
 import 'visitor/models/place_model.dart';
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
               AppRoutes.home: (context) => _buildAuthGuard(const HomePage(), appState),
               AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState),
               AppRoutes.recentPlaces: (context) => _buildAuthGuard(const RecentPlacesPage(), appState),
+              AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState), // Added settings route
             },
 
             // Route generator for dynamic routes (with arguments)
