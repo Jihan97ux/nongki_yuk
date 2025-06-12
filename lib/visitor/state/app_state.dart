@@ -117,6 +117,9 @@ class AppState extends ChangeNotifier {
   // Favorites state
   List<String> _favoriteIds = [];
 
+  // Review state
+  final Map<String, List<Review>> _reviews = {};
+
   // Getters
   AuthStatus get authStatus => _authStatus;
   User? get currentUser => _currentUser;
@@ -141,6 +144,9 @@ class AppState extends ChangeNotifier {
   int get currentBottomNavIndex => _currentBottomNavIndex;
   List<String> get favoriteIds => _favoriteIds;
   List<Place> get favoritePlaces => _places.where((place) => _favoriteIds.contains(place.id)).toList();
+
+  // Review Getters
+  Map<String, List<Review>> get reviews => _reviews;
 
   // Authentication methods
   Future<void> signIn(String email, String password) async {
@@ -455,5 +461,18 @@ class AppState extends ChangeNotifier {
 
   void refreshPlaces() {
     loadPlaces();
+  }
+
+  // Review methods
+  void addReview(String placeId, Review review) {
+    if (_reviews[placeId] == null) {
+      _reviews[placeId] = [];
+    }
+    _reviews[placeId]!.insert(0, review);
+    notifyListeners();
+  }
+
+  List<Review> getReviews(String placeId) {
+    return _reviews[placeId] ?? [];
   }
 }

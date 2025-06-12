@@ -283,7 +283,7 @@ class _RecentPlacesPageState extends State<RecentPlacesPage> with TickerProvider
                   onTap: () {
                     Navigator.pushNamed(
                       context,
-                      AppRoutes.selectedPlace,
+                      '/review',
                       arguments: place,
                     );
                   },

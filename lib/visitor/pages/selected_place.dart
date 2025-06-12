@@ -5,38 +5,39 @@ import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 
-class SelectedPlacePage extends StatelessWidget {
+class SelectedPlacePage extends StatefulWidget {
   final Place? place;
-
   const SelectedPlacePage({super.key, this.place});
+  @override
+  State<SelectedPlacePage> createState() => _SelectedPlacePageState();
+}
+
+class _SelectedPlacePageState extends State<SelectedPlacePage> {
+  int _tabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    Place? currentPlace = place;
-
+    Place? currentPlace = widget.place;
     if (currentPlace == null) {
       final route = ModalRoute.of(context);
       final arguments = route?.settings.arguments;
-
       if (arguments != null && arguments is Place) {
         currentPlace = arguments;
       }
     }
-
     if (currentPlace == null) {
       return _buildErrorPage(context, 'Place data not found');
     }
-
+    final appState = Provider.of<AppState>(context);
+    final reviews = appState.getReviews(currentPlace.id);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Calculate responsive image height
             final imageHeight = constraints.maxHeight > 700
                 ? AppDimensions.cardImageHeight
                 : constraints.maxHeight * 0.45;
-
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -175,23 +176,26 @@ class SelectedPlacePage extends StatelessWidget {
 
                   // Tabs Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
-                      vertical: AppDimensions.paddingS,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     child: Row(
                       children: [
-                        Text(
-                          AppStrings.overview,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            fontWeight: FontWeight.bold,
+                        GestureDetector(
+                          onTap: () => setState(() => _tabIndex = 0),
+                          child: Column(
+                            children: [
+                              Text('Overview', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 0 ? Colors.black : Colors.purple.shade200, fontSize: 18)),
+                              if (_tabIndex == 0) Container(height: 2, width: 80, color: Colors.black, margin: const EdgeInsets.only(top: 4)),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: AppDimensions.paddingL),
-                        Text(
-                          AppStrings.details,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            color: AppColors.primary.withOpacity(0.6),
+                        const SizedBox(width: 24),
+                        GestureDetector(
+                          onTap: () => setState(() => _tabIndex = 1),
+                          child: Column(
+                            children: [
+                              Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Colors.purple : Colors.purple.shade200, fontSize: 18)),
+                              if (_tabIndex == 1) Container(height: 2, width: 80, color: Colors.purple, margin: const EdgeInsets.only(top: 4)),
+                            ],
                           ),
                         ),
                       ],
@@ -236,60 +240,102 @@ class SelectedPlacePage extends StatelessWidget {
                   const SizedBox(height: AppDimensions.paddingM),
 
                   // Content Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentPlace.description.isNotEmpty
-                              ? currentPlace.description
-                              : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.address}. '
-                              'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
-                          style: AppTextStyles.body1.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.5,
-                          ),
-                        ),
-                        if (currentPlace.amenities.isNotEmpty) ...[
-                          const SizedBox(height: AppDimensions.paddingL),
+                  if (_tabIndex == 0) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            'Amenities',
-                            style: AppTextStyles.subtitle1.copyWith(
-                              fontWeight: FontWeight.bold,
+                            currentPlace.description.isNotEmpty
+                                ? currentPlace.description
+                                : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.address}. '
+                                'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
+                            style: AppTextStyles.body1.copyWith(
+                              color: AppColors.textSecondary,
+                              height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.paddingS),
-                          Wrap(
-                            spacing: AppDimensions.paddingS,
-                            runSpacing: AppDimensions.paddingS,
-                            children: currentPlace.amenities.map((amenity) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.paddingM,
-                                  vertical: AppDimensions.paddingS,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                                  border: Border.all(
-                                    color: AppColors.primary.withOpacity(0.3),
+                          if (currentPlace.amenities.isNotEmpty) ...[
+                            const SizedBox(height: AppDimensions.paddingL),
+                            Text(
+                              'Amenities',
+                              style: AppTextStyles.subtitle1.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: AppDimensions.paddingS),
+                            Wrap(
+                              spacing: AppDimensions.paddingS,
+                              runSpacing: AppDimensions.paddingS,
+                              children: currentPlace.amenities.map((amenity) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.paddingM,
+                                    vertical: AppDimensions.paddingS,
                                   ),
-                                ),
-                                child: Text(
-                                  amenity,
-                                  style: AppTextStyles.body2.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w500,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.3),
+                                    ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                                  child: Text(
+                                    amenity,
+                                    style: AppTextStyles.body2.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
+                  if (_tabIndex == 1) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.yellow,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            ),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/review', arguments: currentPlace);
+                            },
+                            icon: const Icon(Icons.rate_review),
+                            label: const Text('Tulis Review'),
+                          ),
+                          const SizedBox(height: 16),
+                          ...reviews.isEmpty
+                              ? [const Text('Belum ada review.')]
+                              : reviews.map((r) => ListTile(
+                                    leading: CircleAvatar(backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null, child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null),
+                                    title: Row(
+                                      children: [
+                                        Text(r.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        const SizedBox(width: 8),
+                                        Row(
+                                          children: List.generate(5, (i) => Icon(i < r.rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 18)),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(r.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    subtitle: Text(r.comment),
+                                  )).toList(),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   const SizedBox(height: AppDimensions.paddingXL),
 
@@ -400,83 +446,80 @@ class SelectedPlacePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.navigation, color: AppColors.primary),
-              const SizedBox(width: AppDimensions.paddingS),
-              Expanded(
-                child: Text(
-                  'Navigate to ${place.title}',
-                  style: AppTextStyles.heading4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Choose your preferred navigation app:',
-                style: AppTextStyles.body1.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingM),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: AppColors.primary, size: 16),
-                  const SizedBox(width: AppDimensions.paddingXS),
-                  Expanded(
-                    child: Text(
-                      place.address,
-                      style: AppTextStyles.body2,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          backgroundColor: Colors.purple.shade50,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.navigation, color: Colors.purple),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('Navigate to ${place.title}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), overflow: TextOverflow.ellipsis),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.paddingXS),
-              Row(
-                children: [
-                  const Icon(Icons.directions_walk, color: AppColors.primary, size: 16),
-                  const SizedBox(width: AppDimensions.paddingXS),
-                  Text(
-                    place.distance,
-                    style: AppTextStyles.body2,
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: Colors.purple.shade700)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.purple, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(place.address, style: const TextStyle(fontWeight: FontWeight.bold))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.directions_walk, color: Colors.purple, size: 18),
+                    const SizedBox(width: 8),
+                    Text(place.distance, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.yellow,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          // TODO: Open Google Maps
+                        },
+                        child: const Text('Open Maps', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ErrorHandler.showSuccessSnackBar(
-                  context,
-                  'Opening Google Maps... 🗺️',
-                );
-              },
-              icon: const Icon(Icons.map),
-              label: const Text('Google Maps'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
         );
       },
     );

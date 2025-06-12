@@ -203,18 +203,19 @@ class HomeFooter extends StatelessWidget {
 
     switch (index) {
       case 0:
-      // Already on home, scroll to top if needed
+        // Home
+        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
         break;
       case 1:
-      // Navigate to recent places
-        _showRecentPlaces(context);
+        // Recent Places
+        Navigator.pushNamed(context, AppRoutes.recentPlaces);
         break;
       case 2:
-      // Navigate to favorites
-        _showFavorites(context);
+        // Favorites
+        Navigator.pushNamed(context, AppRoutes.favorites);
         break;
       case 3:
-      // Navigate to settings
+        // Settings
         Navigator.pushNamed(context, AppRoutes.settings);
         break;
     }
