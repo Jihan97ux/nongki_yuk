@@ -34,8 +34,8 @@ export 'visitor/pages/landing_page.dart';
 export 'visitor/pages/login_page.dart';
 export 'visitor/pages/signup_page.dart';
 export 'visitor/pages/home_page.dart';
-export 'visitor/pages/selected_place.dart';
-//export 'visitor/pages/profile_page.dart';
+//export 'visitor/pages/selected_place.dart';
+export 'visitor/pages/profile_page.dart';
 export 'visitor/pages/recent_places_page.dart';
 
 // Main App

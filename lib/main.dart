@@ -9,7 +9,7 @@ import 'visitor/pages/home_page.dart';
 import 'visitor/pages/selected_place.dart';
 import 'visitor/pages/profile_page.dart';
 import 'visitor/pages/recent_places_page.dart';
-import 'visitor/pages/settings_page.dart'; // Added settings page import
+import 'visitor/pages/settings_page.dart';
 
 //Import model
 import 'visitor/models/place_model.dart';
@@ -53,9 +53,9 @@ class MyApp extends StatelessWidget {
               AppRoutes.login: (context) => const LoginPage(),
               AppRoutes.signup: (context) => const SignUpPage(),
               AppRoutes.home: (context) => _buildAuthGuard(const HomePage(), appState),
-              AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState),
+              AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState), // Updated
               AppRoutes.recentPlaces: (context) => _buildAuthGuard(const RecentPlacesPage(), appState),
-              AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState), // Added settings route
+              AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState),
             },
 
             // Route generator for dynamic routes (with arguments)
@@ -115,7 +115,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// 404 Not Found Page
+// 404 Not Found Page - Enhanced with better styling
 class NotFoundPage extends StatelessWidget {
   const NotFoundPage({super.key});
 
@@ -130,11 +130,16 @@ class NotFoundPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Error Icon
+                // Error Icon with gradient background
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingXL),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.primary.withOpacity(0.05),
+                      ],
+                    ),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -179,7 +184,7 @@ class NotFoundPage extends StatelessWidget {
 
                 const SizedBox(height: AppDimensions.paddingXL * 2),
 
-                // Back to Home Button
+                // Back to Home Button with improved styling
                 SizedBox(
                   width: double.infinity,
                   height: AppDimensions.buttonHeightLarge,
@@ -208,6 +213,7 @@ class NotFoundPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(
                             AppDimensions.radiusL),
                       ),
+                      elevation: 2,
                     ),
                     icon: const Icon(Icons.home),
                     label: const Text(
@@ -225,6 +231,9 @@ class NotFoundPage extends StatelessWidget {
                 // Secondary Action
                 TextButton(
                   onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                  ),
                   child: Text(
                     'Go Back',
                     style: TextStyle(

@@ -61,180 +61,185 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
           return Column(
             children: [
-              // Header Section with Gradient
-              Stack(
-                children: [
-                  // Gradient Background
-                  Container(
-                    height: 400,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFFB39DDB), // Light purple
-                          Color(0xFF9575CD), // Medium purple
-                          Color(0xFF7B1FA2), // Dark purple
-                        ],
-                        stops: [0.0, 0.6, 1.0],
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
-                    ),
+              // Header Section with Gradient - Made taller to match design
+              Container(
+                height: MediaQuery.of(context).size.height * 0.5, // Increased height
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFB39DDB), // Light purple
+                      Color(0xFF9575CD), // Medium purple
+                      Color(0xFF7B1FA2), // Dark purple
+                    ],
+                    stops: [0.0, 0.6, 1.0],
                   ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                child: SafeArea(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Column(
+                        children: [
+                          // Top Navigation Bar
+                          Padding(
+                            padding: const EdgeInsets.all(AppDimensions.paddingL),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                    Icons.arrow_back,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  'Edit Profile',
+                                  style: AppTextStyles.heading3.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                const SizedBox(width: 48), // Balance the back button
+                              ],
+                            ),
+                          ),
 
-                  // Content with proper SafeArea
-                  SafeArea(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: Column(
-                          children: [
-                            // Top Navigation Bar
-                            Padding(
-                              padding: const EdgeInsets.all(AppDimensions.paddingL),
-                              child: Row(
+                          const Spacer(),
+
+                          // Profile Section - Centered and larger
+                          Column(
+                            children: [
+                              // Profile Photo with Camera Button
+                              Stack(
                                 children: [
-                                  IconButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    icon: const Icon(
-                                      Icons.arrow_back,
-                                      color: Colors.white,
-                                      size: 24,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 4,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 80, // Increased size
+                                      backgroundColor: Colors.white,
+                                      child: CircleAvatar(
+                                        radius: 76,
+                                        backgroundImage: NetworkImage(
+                                          user.profileImageUrl ?? 'https://i.pravatar.cc/160',
+                                        ),
+                                        onBackgroundImageError: (exception, stackTrace) {},
+                                        child: user.profileImageUrl == null
+                                            ? Text(
+                                          user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                                          style: AppTextStyles.heading1.copyWith(
+                                            color: AppColors.primary,
+                                            fontSize: 40,
+                                          ),
+                                        )
+                                            : null,
+                                      ),
                                     ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    'Edit Profile',
-                                    style: AppTextStyles.heading3.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                                  Positioned(
+                                    bottom: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => _showImagePicker(context),
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.accent,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 8,
+                                              offset: Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.black,
+                                          size: 20,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                  const Spacer(),
-                                  const SizedBox(width: 48), // Balance the back button
                                 ],
                               ),
-                            ),
 
-                            const SizedBox(height: AppDimensions.paddingXL),
+                              const SizedBox(height: AppDimensions.paddingXL),
 
-                            // Profile Section
-                            Column(
-                              children: [
-                                // Profile Photo with Camera Button
-                                Stack(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
+                              // User Information
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.heading2.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 32,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppDimensions.paddingS),
+                                  GestureDetector(
+                                    onTap: () => _showEditProfile(context),
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white24,
                                         shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
-                                          ),
-                                        ],
                                       ),
-                                      child: CircleAvatar(
-                                        radius: 65,
-                                        backgroundColor: Colors.white,
-                                        child: CircleAvatar(
-                                          radius: 60,
-                                          backgroundImage: NetworkImage(
-                                            user.profileImageUrl ?? 'https://i.pravatar.cc/120',
-                                          ),
-                                          onBackgroundImageError: (exception, stackTrace) {},
-                                          child: user.profileImageUrl == null
-                                              ? Text(
-                                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                                            style: AppTextStyles.heading1.copyWith(
-                                              color: AppColors.primary,
-                                              fontSize: 32,
-                                            ),
-                                          )
-                                              : null,
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 5,
-                                      right: 5,
-                                      child: GestureDetector(
-                                        onTap: () => _showImagePicker(context),
-                                        child: Container(
-                                          width: 36,
-                                          height: 36,
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.accent,
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black26,
-                                                blurRadius: 8,
-                                                offset: Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.camera_alt,
-                                            color: Colors.black,
-                                            size: 18,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: AppDimensions.paddingXL),
-
-                                // User Information
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      user.name,
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.heading2.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 28,
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppDimensions.paddingS),
-                                    GestureDetector(
-                                      onTap: () => _showEditProfile(context),
                                       child: const Icon(
                                         Icons.edit,
                                         color: Colors.white,
-                                        size: 20,
+                                        size: 16,
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppDimensions.paddingXS),
-                                Text(
-                                  'Pembalap',
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.body1.copyWith(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 16,
                                   ),
+                                ],
+                              ),
+                              const SizedBox(height: AppDimensions.paddingS),
+                              Text(
+                                'Pembalap',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.body1.copyWith(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontSize: 18,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
 
-                            const SizedBox(height: AppDimensions.paddingXL),
-                          ],
-                        ),
+                          const Spacer(),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
 
               // Content Section - Your Information Form
@@ -245,16 +250,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: AppDimensions.paddingM),
+                        const SizedBox(height: AppDimensions.paddingL),
 
                         Text(
                           'Your Information',
                           style: AppTextStyles.heading4.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
 
-                        const SizedBox(height: AppDimensions.paddingL),
+                        const SizedBox(height: AppDimensions.paddingXL),
 
                         // Email Field
                         _buildInputField(
@@ -263,7 +269,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           readOnly: true,
                         ),
 
-                        const SizedBox(height: AppDimensions.paddingM),
+                        const SizedBox(height: AppDimensions.paddingL),
 
                         // Phone Field
                         _buildInputField(
@@ -272,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           onTap: () => _showComingSoon(context, 'Phone editing'),
                         ),
 
-                        const SizedBox(height: AppDimensions.paddingM),
+                        const SizedBox(height: AppDimensions.paddingL),
 
                         // Location Field
                         _buildInputField(
@@ -281,14 +287,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           onTap: () => _showComingSoon(context, 'Location editing'),
                         ),
 
-                        const SizedBox(height: AppDimensions.paddingM),
+                        const SizedBox(height: AppDimensions.paddingL),
 
                         // Password Field
                         _buildInputField(
                           value: '********',
                           hintText: 'Password',
                           obscureText: true,
-                          suffixIcon: const Icon(Icons.visibility_off),
+                          suffixIcon: const Icon(Icons.visibility_off, color: Colors.grey),
                           onTap: () => _showComingSoon(context, 'Password change'),
                         ),
 
@@ -309,13 +315,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               backgroundColor: AppColors.accent,
                               foregroundColor: Colors.black,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                               ),
+                              elevation: 0,
                             ),
                             child: Text(
                               'SAVE EDIT',
                               style: AppTextStyles.button.copyWith(
                                 fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -346,14 +354,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingL,
         ),
         decoration: BoxDecoration(
           color: readOnly ? Colors.grey.shade100 : Colors.white,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           border: Border.all(
             color: Colors.grey.shade300,
+            width: 1,
           ),
         ),
         child: Row(
@@ -366,7 +375,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       ? Colors.grey.shade500
                       : readOnly
                       ? Colors.grey.shade600
-                      : AppColors.textPrimary,
+                      : Colors.black87,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -419,9 +429,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               const SizedBox(height: AppDimensions.paddingL),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  ),
                 ),
               ),
               const SizedBox(height: AppDimensions.paddingXL),
@@ -445,6 +458,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       );
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.black,
+                  ),
                   child: const Text('Save Changes'),
                 ),
               ),

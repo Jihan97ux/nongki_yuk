@@ -66,10 +66,7 @@ class ContentCard extends StatelessWidget {
                 children: [
                   // Background Image
                   Positioned.fill(
-                    child: NetworkImageWithError(
-                      imageUrl: place.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildNetworkImage(place.imageUrl),
                   ),
 
                   // Status Label
@@ -202,7 +199,7 @@ class ContentCard extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '${place.price}',
+                                '\$${place.price}',
                                 style: AppTextStyles.body1.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.bold,
@@ -223,6 +220,55 @@ class ContentCard extends StatelessWidget {
     );
   }
 
+  // Custom network image widget with error handling
+  Widget _buildNetworkImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.grey[200],
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColors.primary,
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[300],
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.broken_image,
+                  color: Colors.grey,
+                  size: 40,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Image not found',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Direct navigation method using MaterialPageRoute
   void _navigateToPlaceDirect(BuildContext context, Place place) {
     try {
@@ -234,7 +280,7 @@ class ContentCard extends StatelessWidget {
         MaterialPageRoute(
           builder: (context) => SelectedPlacePage(place: place),
           settings: RouteSettings(
-            name: AppRoutes.selectedPlace,
+            name: '/selected-place', // Use string literal instead of AppRoutes.selectedPlace if not defined
             arguments: place,
           ),
         ),
@@ -264,7 +310,7 @@ class ContentCard extends StatelessWidget {
 
       Navigator.pushNamed(
         context,
-        AppRoutes.selectedPlace,
+        '/selected-place', // Use string literal instead of AppRoutes.selectedPlace if not defined
         arguments: place,
       ).then((value) {
         print('DEBUG ContentCard: Fallback navigation completed');

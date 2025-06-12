@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const HomeFooter(),
+      bottomNavigationBar: const HomeFooter(), // Updated to use improved version
     );
   }
 }
