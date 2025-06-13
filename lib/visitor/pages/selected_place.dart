@@ -157,7 +157,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                   ),
                                   const SizedBox(height: AppDimensions.paddingS),
                                   Text(
-                                    '\$${currentPlace.price}',
+                                    '\Rp.${currentPlace.price}',
                                     style: AppTextStyles.heading4.copyWith(
                                       color: AppColors.accent,
                                       fontWeight: FontWeight.bold,

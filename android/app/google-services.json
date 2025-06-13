@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1093432723763",
+    "firebase_url": "https://nongkiyuk-6763e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "nongkiyuk-6763e",
+    "storage_bucket": "nongkiyuk-6763e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1093432723763:android:e70f00ddd7a7156f485646",
+        "android_client_info": {
+          "package_name": "com.example.nongki_kuy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNLSvd8lXRI6XahRlxpgiitvvDeDZHo3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1093432723763:android:522abc60b5dd1b74485646",
+        "android_client_info": {
+          "package_name": "com.example.nongki_yuk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNLSvd8lXRI6XahRlxpgiitvvDeDZHo3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

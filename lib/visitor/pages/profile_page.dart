@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,6 +18,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -47,6 +52,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void dispose() {
     _animationController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
     super.dispose();
   }
 
@@ -223,14 +230,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                 ],
                               ),
                               const SizedBox(height: AppDimensions.paddingS),
-                              Text(
-                                'Pembalap',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.body1.copyWith(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 18,
-                                ),
-                              ),
                             ],
                           ),
 
@@ -271,31 +270,32 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
                         const SizedBox(height: AppDimensions.paddingL),
 
-                        // Phone Field
-                        _buildInputField(
-                          value: '',
-                          hintText: 'Phone',
-                          onTap: () => _showComingSoon(context, 'Phone editing'),
-                        ),
-
-                        const SizedBox(height: AppDimensions.paddingL),
-
-                        // Location Field
-                        _buildInputField(
-                          value: '',
-                          hintText: 'Location',
-                          onTap: () => _showComingSoon(context, 'Location editing'),
+                        // Password Field
+                        TextField(
+                          controller: _currentPasswordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Current Password',
+                            suffixIcon: const Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                            ),
+                          ),
                         ),
 
                         const SizedBox(height: AppDimensions.paddingL),
 
                         // Password Field
-                        _buildInputField(
-                          value: '********',
-                          hintText: 'Password',
+                        TextField(
+                          controller: _newPasswordController,
                           obscureText: true,
-                          suffixIcon: const Icon(Icons.visibility_off, color: Colors.grey),
-                          onTap: () => _showComingSoon(context, 'Password change'),
+                          decoration: InputDecoration(
+                            labelText: 'New Password',
+                            suffixIcon: const Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                            ),
+                          ),
                         ),
 
                         const SizedBox(height: AppDimensions.paddingXL * 2),
@@ -305,11 +305,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           width: double.infinity,
                           height: AppDimensions.buttonHeightLarge,
                           child: ElevatedButton(
-                            onPressed: () {
-                              ErrorHandler.showSuccessSnackBar(
-                                context,
-                                'Profile saved successfully!',
-                              );
+                            onPressed: () async {
+                              final appState = Provider.of<AppState>(context, listen: false);
+                              final currentPassword = _currentPasswordController.text.trim();
+                              final newPassword = _newPasswordController.text.trim();
+
+                              if (currentPassword.isEmpty || newPassword.isEmpty) {
+                                ErrorHandler.showErrorSnackBar(context, 'Please fill both passwords');
+                                return;
+                              }
+
+                              try {
+                                final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+                                final email = fbUser?.email;
+
+                                final credential = fb_auth.EmailAuthProvider.credential(
+                                  email: email!,
+                                  password: currentPassword,
+                                );
+
+                                await fbUser?.reauthenticateWithCredential(credential);
+                                await appState.updateProfile(password: newPassword);
+
+                                _currentPasswordController.clear();
+                                _newPasswordController.clear();
+
+                                ErrorHandler.showSuccessSnackBar(context, 'Password updated!');
+                              } catch (e) {
+                                ErrorHandler.showErrorSnackBar(context, 'Failed to update password');
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.accent,
@@ -473,6 +497,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   void _showImagePicker(BuildContext context) {
+    final appState = Provider.of<AppState>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -491,17 +517,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 _buildImageOption(
                   icon: Icons.camera_alt,
                   label: 'Camera',
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
-                    _showComingSoon(context, 'Camera');
+                    try {
+                      final url = await appState.uploadImageToCloudinary(ImageSource.camera);
+                      if (url != null) {
+                        await appState.updateProfile(profileImageUrl: url);
+                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
+                      }
+                    } catch (_) {
+                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
+                    }
                   },
                 ),
                 _buildImageOption(
                   icon: Icons.photo_library,
                   label: 'Gallery',
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
-                    _showComingSoon(context, 'Gallery');
+                    try {
+                      final url = await appState.uploadImageToCloudinary(ImageSource.gallery);
+                      print(url);
+                      if (url != null) {
+                        await appState.updateProfile(profileImageUrl: url);
+                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
+                      }
+                    } catch (_) {
+                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
+                    }
                   },
                 ),
               ],

@@ -5,9 +5,19 @@ import '../service/place_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../service/user_position_service.dart';
 import '../service/distance_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum AuthStatus { authenticated, unauthenticated, loading }
 enum PlaceFilter { mostViewed, nearby, latest }
+
+AuthStatus _authStatus = AuthStatus.unauthenticated;
+User? _currentUser;
+String? _authError;
 
 // Advanced Search Filters
 class SearchFilters {
@@ -155,27 +165,38 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      final credential = await fb_auth.FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-      // Mock authentication - in real app, call your API
-      if (email.isNotEmpty && password.length >= 6) {
-        _currentUser = User(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: email.split('@')[0].toUpperCase(),
-          email: email,
-          profileImageUrl: 'https://i.pravatar.cc/100',
-          createdAt: DateTime.now(),
-        );
-        _authStatus = AuthStatus.authenticated;
-        _favoriteIds = []; // Reset favorites on new login
-        _recentPlaces = []; // Reset recent places on new login
-      } else {
-        throw Exception('Invalid email or password');
-      }
-    } catch (e) {
-      _authError = e.toString();
+      final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+      await fbUser?.reload();
+      final refreshedUser = fb_auth.FirebaseAuth.instance.currentUser;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(fbUser!.uid)
+          .get();
+
+      final data = userDoc.data();
+
+      _currentUser = User(
+        id: fbUser.uid,
+        name: fbUser.displayName ?? '',
+        email: fbUser.email ?? '',
+        profileImageUrl: data?['profileImageUrl'] ?? 'https://i.pravatar.cc/100',
+        createdAt: DateTime.now(),
+      );
+
+      _authStatus = AuthStatus.authenticated;
+      _favoriteIds = [];
+      _recentPlaces = [];
+    } on fb_auth.FirebaseAuthException catch (e) {
       _authStatus = AuthStatus.unauthenticated;
+      _authError = e.message;
+    } catch (e) {
+      _authStatus = AuthStatus.unauthenticated;
+      _authError = e.toString();
+      print(e);
     }
 
     notifyListeners();
@@ -187,23 +208,30 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      final credential = await fb_auth.FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Mock sign up - in real app, call your API
+      await credential.user?.updateDisplayName(name);
+      // await credential.user?.reload();
+      final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+
       _currentUser = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        email: email,
+        id: fbUser?.uid ?? '',
+        name: fbUser?.displayName ?? name,
+        email: fbUser?.email ?? email,
         profileImageUrl: 'https://i.pravatar.cc/100',
         createdAt: DateTime.now(),
       );
+
       _authStatus = AuthStatus.authenticated;
       _favoriteIds = [];
       _recentPlaces = [];
-    } catch (e) {
-      _authError = e.toString();
+    } on fb_auth.FirebaseAuthException catch (e) {
       _authStatus = AuthStatus.unauthenticated;
+      _authError = e.message;
+    } catch (e) {
+      _authStatus = AuthStatus.unauthenticated;
+      _authError = e.toString();
     }
 
     notifyListeners();
@@ -427,20 +455,62 @@ class AppState extends ChangeNotifier {
   }
 
   // Profile methods
+  Future<String?> uploadImageToCloudinary(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 80);
+
+    if (picked == null) return null;
+
+    final file = File(picked.path);
+
+    final uri = Uri.parse('https://api.cloudinary.com/v1_1/djj9ofual/upload');
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['upload_preset'] = 'NongkiYuk'
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    final response = await request.send();
+    final resStr = await response.stream.bytesToString();
+
+    if (response.statusCode == 200) {
+      final data = json.decode(resStr);
+      return data['secure_url'];
+    } else {
+      print('Error uploading to Cloudinary: $resStr');
+      return null;
+    }
+  }
+
   Future<void> updateProfile({
     String? name,
-    String? email,
+    String? password,
     String? profileImageUrl,
   }) async {
     if (_currentUser == null) return;
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 500));
+      final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+
+      if (name != null) {
+        await fbUser?.updateDisplayName(name);
+      }
+
+      if (password != null && password.isNotEmpty) {
+        await fbUser?.updatePassword(password);
+      }
+
+      if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+        await fbUser?.updatePhotoURL(profileImageUrl);
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.id)
+            .set({
+          'profileImageUrl': profileImageUrl,
+        }, SetOptions(merge: true));
+      }
 
       _currentUser = _currentUser!.copyWith(
         name: name ?? _currentUser!.name,
-        email: email ?? _currentUser!.email,
         profileImageUrl: profileImageUrl ?? _currentUser!.profileImageUrl,
       );
 
@@ -449,6 +519,7 @@ class AppState extends ChangeNotifier {
       throw Exception('Failed to update profile');
     }
   }
+
 
   // Utility methods
   Place? getPlaceById(String id) {

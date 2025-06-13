@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 // Import all pages
 import 'visitor/pages/landing_page.dart';
 import 'visitor/pages/login_page.dart';
@@ -28,6 +31,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

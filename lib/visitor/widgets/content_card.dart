@@ -199,7 +199,7 @@ class ContentCard extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '\$${place.price}',
+                                '\Rp.${place.price}',
                                 style: AppTextStyles.body1.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.bold,
