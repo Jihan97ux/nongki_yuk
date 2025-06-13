@@ -31,17 +31,43 @@ class Location {
 }
 
 class Review {
+  final String id;
+  final String userId;
   final String userName;
   final String userAvatarUrl;
   final double rating;
   final String comment;
+  final DateTime createdAt;
 
   Review({
+    required this.id,
+    required this.userId,
     required this.userName,
     required this.userAvatarUrl,
     required this.rating,
     required this.comment,
+    required this.createdAt,
   });
+
+  Review copyWith({
+    String? id,
+    String? userId,
+    String? userName,
+    String? userAvatarUrl,
+    double? rating,
+    String? comment,
+    DateTime? createdAt,
+  }) {
+    return Review(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
+      rating: rating ?? this.rating,
+      comment: comment ?? this.comment,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 class Place {

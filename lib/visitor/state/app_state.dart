@@ -472,6 +472,23 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateReview(String placeId, Review updatedReview) {
+    if (_reviews[placeId] == null) return;
+    
+    final index = _reviews[placeId]!.indexWhere((review) => review.id == updatedReview.id);
+    if (index != -1) {
+      _reviews[placeId]![index] = updatedReview;
+      notifyListeners();
+    }
+  }
+
+  void deleteReview(String placeId, String reviewId) {
+    if (_reviews[placeId] == null) return;
+    
+    _reviews[placeId]!.removeWhere((review) => review.id == reviewId);
+    notifyListeners();
+  }
+
   List<Review> getReviews(String placeId) {
     return _reviews[placeId] ?? [];
   }

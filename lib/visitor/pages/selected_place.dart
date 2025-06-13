@@ -316,21 +316,102 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           ),
                           const SizedBox(height: 16),
                           ...reviews.isEmpty
-                              ? [const Text('Belum ada review.')]
+                              ? [const Text('No reviews yet.')]
                               : reviews.map((r) => ListTile(
-                                    leading: CircleAvatar(backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null, child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null),
+                                    leading: CircleAvatar(
+                                      backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null,
+                                      child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null
+                                    ),
                                     title: Row(
                                       children: [
-                                        Text(r.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Expanded(
+                                          child: Text(
+                                            r.userName,
+                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
                                         const SizedBox(width: 8),
                                         Row(
                                           children: List.generate(5, (i) => Icon(i < r.rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 18)),
                                         ),
                                         const SizedBox(width: 4),
-                                        Text(r.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                                        Text(
+                                          r.rating.toStringAsFixed(1),
+                                          style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ],
                                     ),
-                                    subtitle: Text(r.comment),
+                                    subtitle: Text(
+                                      r.comment,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    trailing: appState.currentUser?.id == r.userId
+                                        ? PopupMenuButton<String>(
+                                            icon: const Icon(Icons.more_vert),
+                                            onSelected: (value) {
+                                              if (value == 'edit') {
+                                                Navigator.pushNamed(
+                                                  context,
+                                                  '/review',
+                                                  arguments: currentPlace,
+                                                ).then((_) {
+                                                  setState(() {});
+                                                });
+                                              } else if (value == 'delete') {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) => AlertDialog(
+                                                    title: const Text('Delete Review'),
+                                                    content: const Text('Are you sure you want to delete this review?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context),
+                                                        child: const Text('Cancel'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          if (r.id.isNotEmpty && currentPlace != null) {
+                                                            appState.deleteReview(currentPlace.id, r.id);
+                                                            Navigator.pop(context);
+                                                            setState(() {});
+                                                          }
+                                                        },
+                                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                              const PopupMenuItem(
+                                                value: 'edit',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.edit, size: 20),
+                                                    SizedBox(width: 8),
+                                                    Text('Edit'),
+                                                  ],
+                                                ),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'delete',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.delete, size: 20, color: Colors.red),
+                                                    SizedBox(width: 8),
+                                                    Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : null,
                                   )).toList(),
                         ],
                       ),

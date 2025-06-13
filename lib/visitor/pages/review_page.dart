@@ -2,22 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../models/place_model.dart';
+import '../constants/app_constants.dart';
 
 class ReviewPage extends StatefulWidget {
-  const ReviewPage({super.key});
+  final Review? existingReview;
+  const ReviewPage({super.key, this.existingReview});
 
   @override
   State<ReviewPage> createState() => _ReviewPageState();
 }
 
 class _ReviewPageState extends State<ReviewPage> {
-  double _rating = 4;
-  final TextEditingController _controller = TextEditingController();
+  late double _rating;
+  late final TextEditingController _controller;
+  late final String _reviewId;
+  late final String _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.existingReview?.rating ?? 4;
+    _controller = TextEditingController(text: widget.existingReview?.comment ?? '');
+    _reviewId = widget.existingReview?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+    _userId = widget.existingReview?.userId ?? '';
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final place = ModalRoute.of(context)?.settings.arguments as Place;
     final appState = Provider.of<AppState>(context, listen: false);
+    final currentUser = appState.currentUser;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -27,7 +48,10 @@ class _ReviewPageState extends State<ReviewPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Review', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.existingReview != null ? 'Edit Review' : 'Write Review',
+          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -76,7 +100,7 @@ class _ReviewPageState extends State<ReviewPage> {
               controller: _controller,
               maxLines: 3,
               decoration: const InputDecoration(
-                hintText: 'Tulis review kamu di sini...',
+                hintText: 'Write your review here...',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -91,20 +115,29 @@ class _ReviewPageState extends State<ReviewPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  if (_controller.text.trim().isNotEmpty) {
-                    appState.addReview(
-                      place.id,
-                      Review(
-                        userName: appState.currentUser?.name ?? 'Anonymous',
-                        userAvatarUrl: appState.currentUser?.profileImageUrl ?? '',
-                        rating: _rating,
-                        comment: _controller.text.trim(),
-                      ),
+                  if (_controller.text.trim().isNotEmpty && currentUser != null) {
+                    final review = Review(
+                      id: _reviewId,
+                      userId: currentUser.id,
+                      userName: currentUser.name ?? 'Anonymous',
+                      userAvatarUrl: currentUser.profileImageUrl ?? '',
+                      rating: _rating,
+                      comment: _controller.text.trim(),
+                      createdAt: widget.existingReview?.createdAt ?? DateTime.now(),
                     );
+
+                    if (widget.existingReview != null) {
+                      appState.updateReview(place.id, review);
+                    } else {
+                      appState.addReview(place.id, review);
+                    }
                   }
                   Navigator.pop(context);
                 },
-                child: const Text('SUBMIT', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  widget.existingReview != null ? 'UPDATE' : 'SUBMIT',
+                  style: const TextStyle(fontWeight: FontWeight.bold)
+                ),
               ),
             ),
           ],
