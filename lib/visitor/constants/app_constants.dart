@@ -185,8 +185,10 @@ class AppRoutes {
   static const String selectedPlace = '/selected-place';
   static const String profile = '/profile';
   static const String favorites = '/favorites';
+  static const String review = '/review';
   static const String search = '/search';
   static const String recentPlaces = '/recent-places';
+  static const String settings = '/settings'; // Added settings route
 }
 
 // Input Validation

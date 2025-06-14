@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 // Import all pages
 import 'visitor/pages/landing_page.dart';
 import 'visitor/pages/login_page.dart';
@@ -9,6 +12,9 @@ import 'visitor/pages/home_page.dart';
 import 'visitor/pages/selected_place.dart';
 import 'visitor/pages/profile_page.dart';
 import 'visitor/pages/recent_places_page.dart';
+import 'visitor/pages/settings_page.dart';
+import 'visitor/pages/favorite_places_page.dart';
+import 'visitor/pages/review_page.dart';
 
 //Import model
 import 'visitor/models/place_model.dart';
@@ -25,6 +31,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -52,8 +61,11 @@ class MyApp extends StatelessWidget {
               AppRoutes.login: (context) => const LoginPage(),
               AppRoutes.signup: (context) => const SignUpPage(),
               AppRoutes.home: (context) => _buildAuthGuard(const HomePage(), appState),
-              AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState),
+              AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState), // Updated
               AppRoutes.recentPlaces: (context) => _buildAuthGuard(const RecentPlacesPage(), appState),
+              AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState),
+              AppRoutes.favorites: (context) => _buildAuthGuard(const FavoritePlacesPage(), appState),
+              AppRoutes.review: (context) => _buildAuthGuard(const ReviewPage(), appState),
             },
 
             // Route generator for dynamic routes (with arguments)
@@ -113,7 +125,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// 404 Not Found Page
+// 404 Not Found Page - Enhanced with better styling
 class NotFoundPage extends StatelessWidget {
   const NotFoundPage({super.key});
 
@@ -128,11 +140,16 @@ class NotFoundPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Error Icon
+                // Error Icon with gradient background
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingXL),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.primary.withOpacity(0.05),
+                      ],
+                    ),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -177,7 +194,7 @@ class NotFoundPage extends StatelessWidget {
 
                 const SizedBox(height: AppDimensions.paddingXL * 2),
 
-                // Back to Home Button
+                // Back to Home Button with improved styling
                 SizedBox(
                   width: double.infinity,
                   height: AppDimensions.buttonHeightLarge,
@@ -206,6 +223,7 @@ class NotFoundPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(
                             AppDimensions.radiusL),
                       ),
+                      elevation: 2,
                     ),
                     icon: const Icon(Icons.home),
                     label: const Text(
@@ -223,6 +241,9 @@ class NotFoundPage extends StatelessWidget {
                 // Secondary Action
                 TextButton(
                   onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                  ),
                   child: Text(
                     'Go Back',
                     style: TextStyle(

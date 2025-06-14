@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
-import '../constants/app_constants.dart';
-import '../utils/error_handler.dart';
+import '../constants/app_constants.dart'; // Pastikan ini ada dan berisi AppDimensions, AppColors, AppTextStyles
+import '../utils/error_handler.dart'; // Pastikan ini ada dan berfungsi untuk snackbar
+
+// Import model SearchFilters yang sudah dipindah ke file terpisah
+import '../models/search_filters.dart'; // <--- PASTIKAN PATH INI BENAR
 
 class AdvancedSearchModal extends StatefulWidget {
   const AdvancedSearchModal({super.key});
@@ -21,12 +24,16 @@ class AdvancedSearchModal extends StatefulWidget {
 }
 
 class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
+  // Gunakan _tempFilters untuk menyimpan perubahan sementara di UI
+  // Sebelum di-apply ke AppState dan Firebase
   late SearchFilters _tempFilters;
-  RangeValues _ratingRange = const RangeValues(0, 5);
-  RangeValues _priceRange = const RangeValues(0, 100);
-  double _maxDistance = 50;
-  List<String> _selectedLabels = [];
-  List<String> _selectedAmenities = [];
+
+  // Variables UI states, akan diinisialisasi dari _tempFilters
+  late RangeValues _ratingRange;
+  late RangeValues _priceRange;
+  late double _maxDistance;
+  late List<String> _selectedLabels;
+  late List<String> _selectedAmenities;
 
   final List<String> _availableLabels = ['crowded', 'comfy'];
   final List<String> _availableAmenities = [
@@ -37,26 +44,29 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
   @override
   void initState() {
     super.initState();
+    // Ambil filter saat ini dari AppState sebagai nilai awal untuk UI
     final appState = Provider.of<AppState>(context, listen: false);
-    _tempFilters = appState.searchFilters;
-    _initializeFilters();
+    // Gunakan copyWith() agar perubahan di _tempFilters tidak langsung memengaruhi objek di AppState
+    _tempFilters = appState.searchFilters.copyWith();
+    _initializeUIFilters();
   }
 
-  void _initializeFilters() {
+  // Helper method untuk menginisialisasi state UI dari _tempFilters
+  void _initializeUIFilters() {
     _ratingRange = RangeValues(
       _tempFilters.minRating ?? 0,
       _tempFilters.maxRating ?? 5,
     );
     _priceRange = RangeValues(
       (_tempFilters.minPrice ?? 0).toDouble(),
-      (_tempFilters.maxPrice ?? 100).toDouble(),
+      (_tempFilters.maxPrice ?? 100).toDouble(), // Asumsi default max 100
     );
-    _maxDistance = _tempFilters.maxDistance ?? 50;
+    _maxDistance = _tempFilters.maxDistance ?? 50; // Asumsi default max 50km
     _selectedLabels = List.from(_tempFilters.labels);
     _selectedAmenities = List.from(_tempFilters.amenities);
   }
 
-  void _applyFilters() {
+  void _applyFilters() async { // Ubah menjadi async
     final newFilters = SearchFilters(
       minRating: _ratingRange.start == 0 ? null : _ratingRange.start,
       maxRating: _ratingRange.end == 5 ? null : _ratingRange.end,
@@ -68,19 +78,24 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
     );
 
     final appState = Provider.of<AppState>(context, listen: false);
-    appState.setAdvancedFilters(newFilters);
+    try {
+      // Panggil setAdvancedFilters di AppState, yang akan menyimpan ke Firebase
+      await appState.setAdvancedFilters(newFilters);
+      Navigator.pop(context); // Tutup modal setelah filter diterapkan dan disimpan
 
-    Navigator.pop(context);
-
-    if (newFilters.hasActiveFilters) {
-      ErrorHandler.showSuccessSnackBar(
-        context,
-        'Advanced filters applied! 🎯',
-      );
+      if (newFilters.hasActiveFilters) {
+        ErrorHandler.showSuccessSnackBar(
+          context,
+          'Advanced filters applied! 🎯',
+        );
+      }
+    } catch (e) {
+      ErrorHandler.showErrorSnackBar(context, 'Failed to apply filters: $e');
     }
   }
 
-  void _clearFilters() {
+  void _clearFilters() async { // Ubah menjadi async
+    // Reset state UI ke nilai default
     setState(() {
       _ratingRange = const RangeValues(0, 5);
       _priceRange = const RangeValues(0, 100);
@@ -88,10 +103,22 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
       _selectedLabels.clear();
       _selectedAmenities.clear();
     });
+
+    final appState = Provider.of<AppState>(context, listen: false);
+    try {
+      // Panggil clearAdvancedSearch di AppState, yang akan menyimpan filter default ke Firebase
+      await appState.clearAdvancedSearch();
+      ErrorHandler.showInfoSnackBar(context, 'All filters cleared.');
+    } catch (e) {
+      ErrorHandler.showErrorSnackBar(context, 'Failed to clear filters: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Gunakan Consumer untuk mendengarkan perubahan pada `searchFilters` di `AppState`
+    // Ini berguna jika ada perubahan filter dari tempat lain (misalnya, setelah user login dan filter dimuat dari Firebase)
+    // Walaupun di modal ini kita menggunakan _tempFilters, Consumer bisa membantu re-render jika `searchFilters` di AppState berubah
     return DraggableScrollableSheet(
       initialChildSize: 0.8,
       maxChildSize: 0.95,
@@ -215,39 +242,61 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
               child: Column(
                 children: [
                   // Filter Summary
-                  if (_hasActiveFilters()) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppDimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                        border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Active Filters:',
-                            style: AppTextStyles.body2.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
+                  // Menggunakan Consumer untuk mendapatkan hasActiveFilters dari _tempFilters
+                  Consumer<AppState>( // Tambahkan Consumer di sini
+                    builder: (context, appState, child) {
+                      // Buat objek SearchFilters sementara dari state UI saat ini untuk mengecek hasActiveFilters
+                      final currentUIFilters = SearchFilters(
+                        minRating: _ratingRange.start == 0 ? null : _ratingRange.start,
+                        maxRating: _ratingRange.end == 5 ? null : _ratingRange.end,
+                        minPrice: _priceRange.start == 0 ? null : _priceRange.start.toInt(),
+                        maxPrice: _priceRange.end == 100 ? null : _priceRange.end.toInt(),
+                        maxDistance: _maxDistance == 50 ? null : _maxDistance,
+                        labels: _selectedLabels,
+                        amenities: _selectedAmenities,
+                      );
+                      
+                      if (currentUIFilters.hasActiveFilters) { // Gunakan hasActiveFilters dari model SearchFilters
+                        return Column(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(AppDimensions.paddingM),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Active Filters:',
+                                    style: AppTextStyles.body2.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppDimensions.paddingXS),
+                                  Text(
+                                    _getFilterSummary(), // Menggunakan _getFilterSummary dari state UI
+                                    style: AppTextStyles.body2.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: AppDimensions.paddingXS),
-                          Text(
-                            _getFilterSummary(),
-                            style: AppTextStyles.body2.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.paddingM),
-                  ],
+                            const SizedBox(height: AppDimensions.paddingM),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink(); // Sembunyikan jika tidak ada filter aktif
+                    },
+                  ),
+
 
                   // Apply Button
                   SizedBox(
@@ -349,13 +398,14 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '\$${_priceRange.start.toInt()}',
+                // Contoh: Mengasumsikan 1 unit slider adalah 10000 Rupiah (sesuaikan dengan skala harga Anda)
+                'Rp ${(_priceRange.start * 1000).toInt()}', 
                 style: AppTextStyles.body1.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                '\$${_priceRange.end.toInt()}',
+                'Rp ${(_priceRange.end * 1000).toInt()}', 
                 style: AppTextStyles.body1.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -365,8 +415,8 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
           RangeSlider(
             values: _priceRange,
             min: 0,
-            max: 100,
-            divisions: 10,
+            max: 100, // Max price range, sesuaikan dengan rentang harga data Anda (e.g., 500 untuk 500k)
+            divisions: 10, // Atau lebih banyak divisi untuk kontrol yang lebih halus
             activeColor: AppColors.accent,
             inactiveColor: AppColors.accent.withOpacity(0.3),
             onChanged: (values) {
@@ -408,7 +458,7 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
           Slider(
             value: _maxDistance,
             min: 1,
-            max: 50,
+            max: 50, // Max distance, sesuaikan kebutuhan
             divisions: 49,
             activeColor: AppColors.primary,
             inactiveColor: AppColors.primary.withOpacity(0.3),
@@ -493,23 +543,32 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
     );
   }
 
+  // Helper function to check if any filter is active based on current UI state
   bool _hasActiveFilters() {
-    return _ratingRange != const RangeValues(0, 5) ||
-        _priceRange != const RangeValues(0, 100) ||
-        _maxDistance != 50 ||
-        _selectedLabels.isNotEmpty ||
-        _selectedAmenities.isNotEmpty;
+    // Membuat objek SearchFilters sementara dari state UI saat ini
+    final currentUIFilters = SearchFilters(
+      minRating: _ratingRange.start == 0 ? null : _ratingRange.start,
+      maxRating: _ratingRange.end == 5 ? null : _ratingRange.end,
+      minPrice: _priceRange.start == 0 ? null : _priceRange.start.toInt(),
+      maxPrice: _priceRange.end == 100 ? null : _priceRange.end.toInt(),
+      maxDistance: _maxDistance == 50 ? null : _maxDistance,
+      labels: _selectedLabels,
+      amenities: _selectedAmenities,
+    );
+    return currentUIFilters.hasActiveFilters; // Menggunakan getter dari model
   }
 
+  // Updated _getFilterSummary to reflect current UI state
   String _getFilterSummary() {
     List<String> summary = [];
 
-    if (_ratingRange != const RangeValues(0, 5)) {
+    if (_ratingRange.start != 0 || _ratingRange.end != 5) {
       summary.add('Rating: ${_ratingRange.start.toStringAsFixed(1)}-${_ratingRange.end.toStringAsFixed(1)}');
     }
 
-    if (_priceRange != const RangeValues(0, 100)) {
-      summary.add('Price: \$${_priceRange.start.toInt()}-\$${_priceRange.end.toInt()}');
+    if (_priceRange.start != 0 || _priceRange.end != 100) {
+      // Menampilkan rentang harga yang disesuaikan
+      summary.add('Price: Rp ${(_priceRange.start * 1000).toInt()}-Rp ${(_priceRange.end * 1000).toInt()}');
     }
 
     if (_maxDistance != 50) {

@@ -1,4 +1,3 @@
-// app_exports.dart
 // Single file to import all necessary components
 
 // Constants
@@ -34,9 +33,11 @@ export 'visitor/pages/landing_page.dart';
 export 'visitor/pages/login_page.dart';
 export 'visitor/pages/signup_page.dart';
 export 'visitor/pages/home_page.dart';
-export 'visitor/pages/selected_place.dart';
 export 'visitor/pages/profile_page.dart';
 export 'visitor/pages/recent_places_page.dart';
+export 'visitor/pages/review_page.dart';
+export 'visitor/pages/favorite_places_page.dart';
+export 'visitor/pages/settings_page.dart';
 
 // Main App
 export 'main.dart';

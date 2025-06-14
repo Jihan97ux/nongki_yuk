@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
-import 'selected_place.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,6 +18,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -48,6 +52,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void dispose() {
     _animationController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
     super.dispose();
   }
 
@@ -62,297 +68,286 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
           return Column(
             children: [
-              // Header Section with Gradient - FIXED VERSION
-              Stack(
-                children: [
-                  // Gradient Background - Extended to cover user info
-                  Container(
-                    height: 480, // Increased height to cover user info area
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFFB39DDB), // Light purple
-                          Color(0xFF9575CD), // Medium purple
-                          Color(0xFF7B1FA2), // Dark purple
-                        ],
-                        stops: [0.0, 0.6, 1.0], // Control gradient distribution
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
-                    ),
+              // Header Section with Gradient - Made taller to match design
+              Container(
+                height: MediaQuery.of(context).size.height * 0.5, // Increased height
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFB39DDB), // Light purple
+                      Color(0xFF9575CD), // Medium purple
+                      Color(0xFF7B1FA2), // Dark purple
+                    ],
+                    stops: [0.0, 0.6, 1.0],
                   ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                child: SafeArea(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Column(
+                        children: [
+                          // Top Navigation Bar
+                          Padding(
+                            padding: const EdgeInsets.all(AppDimensions.paddingL),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                    Icons.arrow_back,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  'Edit Profile',
+                                  style: AppTextStyles.heading3.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                const SizedBox(width: 48), // Balance the back button
+                              ],
+                            ),
+                          ),
 
-                  // Content with proper SafeArea
-                  SafeArea(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: Column(
-                          children: [
-                            // Top Navigation Bar
-                            Padding(
-                              padding: const EdgeInsets.all(AppDimensions.paddingL),
-                              child: Row(
+                          const Spacer(),
+
+                          // Profile Section - Centered and larger
+                          Column(
+                            children: [
+                              // Profile Photo with Camera Button
+                              Stack(
                                 children: [
-                                  IconButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    icon: const Icon(
-                                      Icons.arrow_back,
-                                      color: Colors.white,
-                                      size: 24,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 4,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 80, // Increased size
+                                      backgroundColor: Colors.white,
+                                      child: CircleAvatar(
+                                        radius: 76,
+                                        backgroundImage: NetworkImage(
+                                          user.profileImageUrl ?? 'https://i.pravatar.cc/160',
+                                        ),
+                                        onBackgroundImageError: (exception, stackTrace) {},
+                                        child: user.profileImageUrl == null
+                                            ? Text(
+                                          user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                                          style: AppTextStyles.heading1.copyWith(
+                                            color: AppColors.primary,
+                                            fontSize: 40,
+                                          ),
+                                        )
+                                            : null,
+                                      ),
                                     ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    'Profile',
-                                    style: AppTextStyles.heading3.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                    onPressed: () => _showEditProfile(context),
-                                    icon: const Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                      size: 24,
+                                  Positioned(
+                                    bottom: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => _showImagePicker(context),
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.accent,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 8,
+                                              offset: Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.black,
+                                          size: 20,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
 
-                            const SizedBox(height: AppDimensions.paddingXL),
+                              const SizedBox(height: AppDimensions.paddingXL),
 
-                            // Profile Section - Centered and Well Spaced
-                            Column(
-                              children: [
-                                // Profile Photo with Better Shadow
-                                Stack(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
+                              // User Information
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.heading2.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 32,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppDimensions.paddingS),
+                                  GestureDetector(
+                                    onTap: () => _showEditProfile(context),
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white24,
                                         shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
-                                          ),
-                                        ],
                                       ),
-                                      child: CircleAvatar(
-                                        radius: 65,
-                                        backgroundColor: Colors.white,
-                                        child: CircleAvatar(
-                                          radius: 60,
-                                          backgroundImage: NetworkImage(
-                                            user.profileImageUrl ?? 'https://i.pravatar.cc/120',
-                                          ),
-                                          onBackgroundImageError: (exception, stackTrace) {},
-                                          child: user.profileImageUrl == null
-                                              ? Text(
-                                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                                            style: AppTextStyles.heading1.copyWith(
-                                              color: AppColors.primary,
-                                              fontSize: 32,
-                                            ),
-                                          )
-                                              : null,
-                                        ),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                        size: 16,
                                       ),
                                     ),
-                                    Positioned(
-                                      bottom: 5,
-                                      right: 5,
-                                      child: GestureDetector(
-                                        onTap: () => _showEditProfile(context),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(AppDimensions.paddingS),
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.accent,
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black26,
-                                                blurRadius: 8,
-                                                offset: Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.camera_alt,
-                                            color: Colors.black,
-                                            size: 18,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppDimensions.paddingS),
+                            ],
+                          ),
 
-                                const SizedBox(height: AppDimensions.paddingXL),
-
-                                // User Information - Better Typography
-                                Text(
-                                  user.name,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.heading2.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
-                                  ),
-                                ),
-                                const SizedBox(height: AppDimensions.paddingS),
-                                Text(
-                                  user.email,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.body1.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: AppDimensions.paddingM),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingL,
-                                    vertical: AppDimensions.paddingS,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                                  ),
-                                  child: Text(
-                                    'Member since ${_formatDate(user.createdAt)}',
-                                    style: AppTextStyles.body2.copyWith(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: AppDimensions.paddingXL),
-                          ],
-                        ),
+                          const Spacer(),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
 
-              // Content Section with Cards - Adjusted Overlap
+              // Content Section - Your Information Form
               Expanded(
                 child: SingleChildScrollView(
-                  child: Transform.translate(
-                    offset: const Offset(0, -20), // Reduced overlap so cards don't get cut off
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Statistics Cards - Positioned to avoid gradient overlap
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: AppDimensions.paddingL,
-                            right: AppDimensions.paddingL,
-                            top: AppDimensions.paddingXL, // Extra top padding
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildStatCard(
-                                  icon: Icons.favorite,
-                                  label: 'Favorites',
-                                  count: appState.favoritePlaces.length,
-                                  color: Colors.red,
-                                  onTap: () => _showFavorites(context, appState),
-                                ),
-                              ),
-                              const SizedBox(width: AppDimensions.paddingM),
-                              Expanded(
-                                child: _buildStatCard(
-                                  icon: Icons.access_time,
-                                  label: 'Recent',
-                                  count: appState.recentPlaces.length,
-                                  color: AppColors.primary,
-                                  onTap: () => _showRecentPlaces(context, appState),
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: AppDimensions.paddingL),
+
+                        Text(
+                          'Your Information',
+                          style: AppTextStyles.heading4.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
 
                         const SizedBox(height: AppDimensions.paddingXL),
 
-                        // Menu Items
-                        _buildMenuItem(
-                          icon: Icons.person_outline,
-                          title: 'Edit Profile',
-                          subtitle: 'Update your personal information',
-                          onTap: () => _showEditProfile(context),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.favorite_outline,
-                          title: 'My Favorites',
-                          subtitle: '${appState.favoritePlaces.length} saved places',
-                          onTap: () => _showFavorites(context, appState),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.history,
-                          title: 'Recent Places',
-                          subtitle: '${appState.recentPlaces.length} visited places',
-                          onTap: () => _showRecentPlaces(context, appState),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.settings_outlined,
-                          title: 'Settings',
-                          subtitle: 'Preferences and notifications',
-                          onTap: () => _showComingSoon(context, 'Settings'),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.help_outline,
-                          title: 'Help & Support',
-                          subtitle: 'FAQ and customer support',
-                          onTap: () => _showComingSoon(context, 'Help & Support'),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.info_outline,
-                          title: 'About',
-                          subtitle: 'App version and terms',
-                          onTap: () => _showAbout(context),
+                        // Email Field
+                        _buildInputField(
+                          value: user.email,
+                          hintText: 'Email',
+                          readOnly: true,
                         ),
 
-                        const SizedBox(height: AppDimensions.paddingXL),
+                        const SizedBox(height: AppDimensions.paddingL),
 
-                        // Sign Out Button
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: AppDimensions.buttonHeightLarge,
-                            child: ElevatedButton.icon(
-                              onPressed: () => _showSignOutDialog(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red.shade50,
-                                foregroundColor: Colors.red,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                                  side: BorderSide(color: Colors.red.shade200),
-                                ),
+                        // Password Field
+                        TextField(
+                          controller: _currentPasswordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Current Password',
+                            suffixIcon: const Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: AppDimensions.paddingL),
+
+                        // Password Field
+                        TextField(
+                          controller: _newPasswordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'New Password',
+                            suffixIcon: const Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: AppDimensions.paddingXL * 2),
+
+                        // Save Edit Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: AppDimensions.buttonHeightLarge,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final appState = Provider.of<AppState>(context, listen: false);
+                              final currentPassword = _currentPasswordController.text.trim();
+                              final newPassword = _newPasswordController.text.trim();
+
+                              if (currentPassword.isEmpty || newPassword.isEmpty) {
+                                ErrorHandler.showErrorSnackBar(context, 'Please fill both passwords');
+                                return;
+                              }
+
+                              try {
+                                final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+                                final email = fbUser?.email;
+
+                                final credential = fb_auth.EmailAuthProvider.credential(
+                                  email: email!,
+                                  password: currentPassword,
+                                );
+
+                                await fbUser?.reauthenticateWithCredential(credential);
+                                await appState.updateProfile(password: newPassword);
+
+                                _currentPasswordController.clear();
+                                _newPasswordController.clear();
+
+                                ErrorHandler.showSuccessSnackBar(context, 'Password updated!');
+                              } catch (e) {
+                                ErrorHandler.showErrorSnackBar(context, 'Failed to update password');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accent,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                               ),
-                              icon: const Icon(Icons.logout),
-                              label: const Text(
-                                'Sign Out',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'SAVE EDIT',
+                              style: AppTextStyles.button.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -371,105 +366,47 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required int count,
-    required Color color,
-    required VoidCallback onTap,
+  Widget _buildInputField({
+    required String value,
+    required String hintText,
+    bool obscureText = false,
+    bool readOnly = false,
+    Widget? suffixIcon,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingXL),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(height: AppDimensions.paddingM),
-            Text(
-              count.toString(),
-              style: AppTextStyles.heading3.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingXS),
-            Text(
-              label,
-              style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingXS,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingS,
+          vertical: AppDimensions.paddingL,
         ),
-        shape: RoundedRectangleBorder(
+        decoration: BoxDecoration(
+          color: readOnly ? Colors.grey.shade100 : Colors.white,
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-        ),
-        tileColor: Colors.white,
-        leading: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingS),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-          ),
-          child: Icon(icon, color: AppColors.primary),
-        ),
-        title: Text(
-          title,
-          style: AppTextStyles.subtitle1.copyWith(
-            fontWeight: FontWeight.w600,
+          border: Border.all(
+            color: Colors.grey.shade300,
+            width: 1,
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: AppTextStyles.body2.copyWith(
-            color: AppColors.textSecondary,
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value.isEmpty ? hintText : value,
+                style: AppTextStyles.body1.copyWith(
+                  color: value.isEmpty
+                      ? Colors.grey.shade500
+                      : readOnly
+                      ? Colors.grey.shade600
+                      : Colors.black87,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            if (suffixIcon != null) suffixIcon,
+          ],
         ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppColors.textSecondary,
-        ),
-        onTap: onTap,
       ),
     );
   }
@@ -479,7 +416,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final user = appState.currentUser!;
 
     final nameController = TextEditingController(text: user.name);
-    final emailController = TextEditingController(text: user.email);
 
     showModalBottomSheet(
       context: context,
@@ -504,7 +440,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               Row(
                 children: [
                   Text(
-                    'Edit Profile',
+                    'Edit Name',
                     style: AppTextStyles.heading4,
                   ),
                   const Spacer(),
@@ -517,19 +453,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               const SizedBox(height: AppDimensions.paddingL),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.paddingM),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: AppDimensions.paddingXL),
               SizedBox(
@@ -539,20 +469,23 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     try {
                       await appState.updateProfile(
                         name: nameController.text.trim(),
-                        email: emailController.text.trim(),
                       );
                       Navigator.pop(context);
                       ErrorHandler.showSuccessSnackBar(
                         context,
-                        'Profile updated successfully!',
+                        'Name updated successfully!',
                       );
                     } catch (e) {
                       ErrorHandler.showErrorSnackBar(
                         context,
-                        'Failed to update profile',
+                        'Failed to update name',
                       );
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.black,
+                  ),
                   child: const Text('Save Changes'),
                 ),
               ),
@@ -563,484 +496,90 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  // FIXED: Proper favorites modal
-  void _showFavorites(BuildContext context, AppState appState) {
-    print('DEBUG Profile: Showing favorites modal');
-    final favorites = appState.favoritePlaces;
-
-    if (favorites.isEmpty) {
-      ErrorHandler.showSuccessSnackBar(
-        context,
-        'No favorite places yet! ❤️ some places first.',
-      );
-      return;
-    }
+  void _showImagePicker(BuildContext context) {
+    final appState = Provider.of<AppState>(context, listen: false);
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusXL),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingS),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingS),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                      ),
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.paddingM),
-                    Text(
-                      'Your Favorites',
-                      style: AppTextStyles.heading4,
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${favorites.length} places',
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                  ),
-                  itemCount: favorites.length,
-                  itemBuilder: (context, index) {
-                    final place = favorites[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                          child: NetworkImageWithError(
-                            imageUrl: place.imageUrl,
-                            width: 56,
-                            height: 56,
-                          ),
-                        ),
-                        title: Text(
-                          place.title,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Text(
-                          place.address,
-                          style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, color: AppColors.accent, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              place.rating.toString(),
-                              style: AppTextStyles.body2.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SelectedPlacePage(place: place),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // FIXED: Proper recent places modal
-  void _showRecentPlaces(BuildContext context, AppState appState) {
-    print('DEBUG Profile: Showing recent places modal');
-    final recentPlaces = appState.recentPlaces;
-
-    if (recentPlaces.isEmpty) {
-      ErrorHandler.showSuccessSnackBar(
-        context,
-        'No recent places yet! Visit some places first. 🚀',
-      );
-      return;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusXL),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingS),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingS),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                      ),
-                      child: const Icon(
-                        Icons.access_time,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.paddingM),
-                    Text(
-                      'Recent Places',
-                      style: AppTextStyles.heading4,
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${recentPlaces.length} places',
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                  ),
-                  itemCount: recentPlaces.length,
-                  itemBuilder: (context, index) {
-                    final recentPlace = recentPlaces[index];
-                    final place = recentPlace.place;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                          child: NetworkImageWithError(
-                            imageUrl: place.imageUrl,
-                            width: 56,
-                            height: 56,
-                          ),
-                        ),
-                        title: Text(
-                          place.title,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              place.address,
-                              style: AppTextStyles.body2.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: AppDimensions.paddingXS),
-                            Text(
-                              'Visited ${_formatTimeAgo(recentPlace.visitedAt)}',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, color: AppColors.accent, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              place.rating.toString(),
-                              style: AppTextStyles.body2.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SelectedPlacePage(place: place),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showAbout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingS),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFB39DDB), Color(0xFF7B1FA2)],
-                ),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-              ),
-              child: const Icon(Icons.info, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: AppDimensions.paddingM),
-            const Text('About Nongki Yuk!'),
-          ],
-        ),
-        content: Column(
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingXL),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Find the Perfect Hangout on South Jakarta',
-              style: AppTextStyles.subtitle1,
+              'Change Profile Picture',
+              style: AppTextStyles.heading4,
             ),
-            const SizedBox(height: AppDimensions.paddingM),
-            Text(
-              'Version 1.0.0',
-              style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingS),
-            Text(
-              'Made with ❤️ for Jakarta hangout enthusiasts',
-              style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
-              ),
+            const SizedBox(height: AppDimensions.paddingL),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImageOption(
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final url = await appState.uploadImageToCloudinary(ImageSource.camera);
+                      if (url != null) {
+                        await appState.updateProfile(profileImageUrl: url);
+                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
+                      }
+                    } catch (_) {
+                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
+                    }
+                  },
+                ),
+                _buildImageOption(
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final url = await appState.uploadImageToCloudinary(ImageSource.gallery);
+                      print(url);
+                      if (url != null) {
+                        await appState.updateProfile(profileImageUrl: url);
+                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
+                      }
+                    } catch (_) {
+                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
 
-  void _showSignOutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+  Widget _buildImageOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final appState = Provider.of<AppState>(context, listen: false);
-              appState.signOut();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-              Navigator.pushReplacementNamed(context, AppRoutes.landing);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Sign Out'),
-          ),
-        ],
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: AppColors.primary),
+            const SizedBox(height: AppDimensions.paddingS),
+            Text(label, style: AppTextStyles.body2),
+          ],
+        ),
       ),
     );
   }
 
   void _showComingSoon(BuildContext context, String feature) {
     ErrorHandler.showSuccessSnackBar(context, '$feature coming soon!');
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${months[date.month - 1]} ${date.year}';
-  }
-
-  String _formatTimeAgo(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 7) {
-      return '${(difference.inDays / 7).floor()}w ago';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
-  }
-}
-
-// Helper widget for handling network images with error fallback
-class NetworkImageWithError extends StatelessWidget {
-  final String imageUrl;
-  final double width;
-  final double height;
-
-  const NetworkImageWithError({
-    super.key,
-    required this.imageUrl,
-    required this.width,
-    required this.height,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Image.network(
-        imageUrl,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.image_not_supported,
-              color: Colors.grey.shade600,
-              size: width * 0.4,
-            ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 }

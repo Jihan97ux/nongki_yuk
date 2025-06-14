@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
-import '../utils/error_handler.dart';
 
-class RecentPlacesPage extends StatelessWidget {
-  const RecentPlacesPage({super.key});
+class FavoritePlacesPage extends StatelessWidget {
+  const FavoritePlacesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +17,19 @@ class RecentPlacesPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('History', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text('Favorites', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
       ),
       body: Consumer<AppState>(
         builder: (context, appState, child) {
-          final recentPlaces = appState.recentPlaces;
-          if (recentPlaces.isEmpty) {
-            return const Center(child: Text('No recent places.'));
+          final favorites = appState.favoritePlaces;
+          if (favorites.isEmpty) {
+            return const Center(child: Text('Belum ada tempat favorit.')); // Bisa diganti empty state
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: recentPlaces.length,
+            itemCount: favorites.length,
             itemBuilder: (context, index) {
-              final recentPlace = recentPlaces[index];
-              final place = recentPlace.place;
+              final place = favorites[index];
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
@@ -53,22 +51,7 @@ class RecentPlacesPage extends StatelessWidget {
                       Text('Start from IDR ${place.price}', style: const TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          const SizedBox(width: 2),
-                          Text(place.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/selected-place', arguments: place);
-                  },
+                  trailing: const Icon(Icons.favorite, color: Colors.red),
                 ),
               );
             },
@@ -77,4 +60,4 @@ class RecentPlacesPage extends StatelessWidget {
       ),
     );
   }
-}
+} 

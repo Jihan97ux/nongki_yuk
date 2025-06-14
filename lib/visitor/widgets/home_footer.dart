@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import '../models/place_model.dart';
 
 class HomeFooter extends StatelessWidget {
   const HomeFooter({super.key});
@@ -11,93 +12,187 @@ class HomeFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
-        return BottomNavigationBar(
-          backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: appState.currentBottomNavIndex,
-          onTap: (index) {
-            appState.setBottomNavIndex(index);
-            _handleNavigation(context, index);
-          },
-          elevation: 8,
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: AppColors.background,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: Colors.grey.shade500,
+            type: BottomNavigationBarType.fixed,
+            currentIndex: appState.currentBottomNavIndex,
+            onTap: (index) {
+              appState.setBottomNavIndex(index);
+              _handleNavigation(context, index);
+            },
+            elevation: 0,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.access_time),
-                  if (appState.recentPlaces.isNotEmpty)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: AppColors.accent,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          appState.recentPlaces.length.toString(),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 12,
+            ),
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.access_time_outlined),
+                    if (appState.recentPlaces.isNotEmpty)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.accent,
+                            shape: BoxShape.circle,
                           ),
-                          textAlign: TextAlign.center,
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            appState.recentPlaces.length > 99
+                                ? '99+'
+                                : appState.recentPlaces.length.toString(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              label: 'Recent',
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.favorite_border),
-                  if (appState.favoritePlaces.isNotEmpty)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          appState.favoritePlaces.length.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                  ],
+                ),
+                activeIcon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.access_time),
+                    if (appState.recentPlaces.isNotEmpty)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.accent,
+                            shape: BoxShape.circle,
                           ),
-                          textAlign: TextAlign.center,
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            appState.recentPlaces.length > 99
+                                ? '99+'
+                                : appState.recentPlaces.length.toString(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+                label: 'Recent',
               ),
-              label: 'Favorites',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Profile',
-            ),
-          ],
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.favorite_border_outlined),
+                    if (appState.favoritePlaces.isNotEmpty)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            appState.favoritePlaces.length > 99
+                                ? '99+'
+                                : appState.favoritePlaces.length.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                activeIcon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.favorite),
+                    if (appState.favoritePlaces.isNotEmpty)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            appState.favoritePlaces.length > 99
+                                ? '99+'
+                                : appState.favoritePlaces.length.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                label: 'Favorites',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.settings_outlined),
+                activeIcon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+          ),
         );
       },
     );
@@ -108,19 +203,20 @@ class HomeFooter extends StatelessWidget {
 
     switch (index) {
       case 0:
-      // Already on home, maybe scroll to top or refresh
+        // Home
+        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
         break;
       case 1:
-      // Navigate to recent places
-        _showRecentPlaces(context);
+        // Recent Places
+        Navigator.pushNamed(context, AppRoutes.recentPlaces);
         break;
       case 2:
-      // Navigate to favorites
-        _showFavorites(context);
+        // Favorites
+        Navigator.pushNamed(context, AppRoutes.favorites);
         break;
       case 3:
-      // Navigate to profile
-        Navigator.pushNamed(context, AppRoutes.profile);
+        // Settings
+        Navigator.pushNamed(context, AppRoutes.settings);
         break;
     }
   }
@@ -130,15 +226,10 @@ class HomeFooter extends StatelessWidget {
     final recentPlaces = appState.recentPlaces;
 
     if (recentPlaces.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No recent places yet! Visit some places first. 🚀'),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          ),
-        ),
+      _showInfoSnackBar(
+        context,
+        'No recent places yet! Visit some places first. 🚀',
+        icon: Icons.explore,
       );
       return;
     }
@@ -155,11 +246,12 @@ class HomeFooter extends StatelessWidget {
           decoration: const BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusL),
+              top: Radius.circular(AppDimensions.radiusXL),
             ),
           ),
           child: Column(
             children: [
+              // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: AppDimensions.paddingS),
                 width: 40,
@@ -169,6 +261,8 @@ class HomeFooter extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+
+              // Header
               Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 child: Row(
@@ -176,7 +270,12 @@ class HomeFooter extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingS),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.1),
+                            AppColors.primary.withOpacity(0.05),
+                          ],
+                        ),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
                       child: const Icon(
@@ -188,18 +287,33 @@ class HomeFooter extends StatelessWidget {
                     const SizedBox(width: AppDimensions.paddingM),
                     Text(
                       'Recent Places',
-                      style: AppTextStyles.heading4,
+                      style: AppTextStyles.heading4.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const Spacer(),
-                    Text(
-                      '${recentPlaces.length} places',
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS,
+                        vertical: AppDimensions.paddingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                      child: Text(
+                        '${recentPlaces.length} places',
+                        style: AppTextStyles.body2.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Content
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -210,75 +324,7 @@ class HomeFooter extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final recentPlace = recentPlaces[index];
                     final place = recentPlace.place;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                          child: NetworkImageWithError(
-                            imageUrl: place.imageUrl,
-                            width: 56,
-                            height: 56,
-                          ),
-                        ),
-                        title: Text(
-                          place.title,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              place.address,
-                              style: AppTextStyles.body2.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: AppDimensions.paddingXS),
-                            Text(
-                              'Visited ${_formatTimeAgo(recentPlace.visitedAt)}',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star, color: AppColors.accent, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  place.rating.toString(),
-                                  style: AppTextStyles.body2.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.selectedPlace,
-                            arguments: place,
-                          );
-                        },
-                      ),
-                    );
+                    return _buildPlaceListItem(context, place, recentPlace.visitedAt);
                   },
                 ),
               ),
@@ -294,15 +340,10 @@ class HomeFooter extends StatelessWidget {
     final favorites = appState.favoritePlaces;
 
     if (favorites.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No favorite places yet! ❤️ some places first.'),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          ),
-        ),
+      _showInfoSnackBar(
+        context,
+        'No favorite places yet! ❤️ some places first.',
+        icon: Icons.favorite_border,
       );
       return;
     }
@@ -319,11 +360,12 @@ class HomeFooter extends StatelessWidget {
           decoration: const BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusL),
+              top: Radius.circular(AppDimensions.radiusXL),
             ),
           ),
           child: Column(
             children: [
+              // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: AppDimensions.paddingS),
                 width: 40,
@@ -333,6 +375,8 @@ class HomeFooter extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+
+              // Header
               Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 child: Row(
@@ -352,18 +396,33 @@ class HomeFooter extends StatelessWidget {
                     const SizedBox(width: AppDimensions.paddingM),
                     Text(
                       'Your Favorites',
-                      style: AppTextStyles.heading4,
+                      style: AppTextStyles.heading4.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const Spacer(),
-                    Text(
-                      '${favorites.length} places',
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS,
+                        vertical: AppDimensions.paddingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                      child: Text(
+                        '${favorites.length} places',
+                        style: AppTextStyles.body2.copyWith(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Content
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -373,57 +432,7 @@ class HomeFooter extends StatelessWidget {
                   itemCount: favorites.length,
                   itemBuilder: (context, index) {
                     final place = favorites[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                          child: NetworkImageWithError(
-                            imageUrl: place.imageUrl,
-                            width: 56,
-                            height: 56,
-                          ),
-                        ),
-                        title: Text(
-                          place.title,
-                          style: AppTextStyles.subtitle1.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Text(
-                          place.address,
-                          style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, color: AppColors.accent, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              place.rating.toString(),
-                              style: AppTextStyles.body2.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.selectedPlace,
-                            arguments: place,
-                          );
-                        },
-                      ),
-                    );
+                    return _buildPlaceListItem(context, place, null);
                   },
                 ),
               ),
@@ -434,11 +443,138 @@ class HomeFooter extends StatelessWidget {
     );
   }
 
+  Widget _buildPlaceListItem(BuildContext context, Place place, DateTime? visitedAt) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.pushNamed(
+            context,
+            AppRoutes.selectedPlace,
+            arguments: place,
+          );
+        },
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          child: Row(
+            children: [
+              // Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                child: NetworkImageWithError(
+                  imageUrl: place.imageUrl,
+                  width: 64,
+                  height: 64,
+                ),
+              ),
+
+              const SizedBox(width: AppDimensions.paddingM),
+
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      place.title,
+                      style: AppTextStyles.subtitle1.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppDimensions.paddingXS),
+                    Text(
+                      place.address,
+                      style: AppTextStyles.body2.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (visitedAt != null) ...[
+                      const SizedBox(height: AppDimensions.paddingXS),
+                      Text(
+                        'Visited ${_formatTimeAgo(visitedAt)}',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // Rating and Price
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star, color: AppColors.accent, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        place.rating.toString(),
+                        style: AppTextStyles.body2.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.paddingXS),
+                  Text(
+                    '\$${place.price}',
+                    style: AppTextStyles.subtitle1.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(BuildContext context, String message, {IconData? icon}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(width: AppDimensions.paddingS),
+            ],
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        ),
+        margin: const EdgeInsets.all(AppDimensions.paddingL),
+      ),
+    );
+  }
+
   String _formatTimeAgo(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
-    if (difference.inDays > 0) {
+    if (difference.inDays > 7) {
+      return '${(difference.inDays / 7).floor()}w ago';
+    } else if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {
       return '${difference.inHours}h ago';

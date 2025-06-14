@@ -30,6 +30,46 @@ class Location {
   }
 }
 
+class Review {
+  final String id;
+  final String userId;
+  final String userName;
+  final String userAvatarUrl;
+  final double rating;
+  final String comment;
+  final DateTime createdAt;
+
+  Review({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.userAvatarUrl,
+    required this.rating,
+    required this.comment,
+    required this.createdAt,
+  });
+
+  Review copyWith({
+    String? id,
+    String? userId,
+    String? userName,
+    String? userAvatarUrl,
+    double? rating,
+    String? comment,
+    DateTime? createdAt,
+  }) {
+    return Review(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
+      rating: rating ?? this.rating,
+      comment: comment ?? this.comment,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
 class Place {
   final String id;
   final String title;
@@ -47,6 +87,7 @@ class Place {
   final List<String> amenities;
   final String operatingHours;
   final bool isFavorite;
+  final List<Review> reviews;
 
   Place({
     required this.id,
@@ -65,6 +106,7 @@ class Place {
     this.amenities = const [],
     this.operatingHours = '08:00 - 22:00',
     this.isFavorite = false,
+    this.reviews = const [],
   });
 
   Place copyWith({
@@ -84,6 +126,7 @@ class Place {
     List<String>? amenities,
     String? operatingHours,
     bool? isFavorite,
+    List<Review>? reviews,
   }) {
     return Place(
       id: id ?? this.id,
@@ -102,6 +145,7 @@ class Place {
       amenities: amenities ?? this.amenities,
       operatingHours: operatingHours ?? this.operatingHours,
       isFavorite: isFavorite ?? this.isFavorite,
+      reviews: reviews ?? this.reviews,
     );
   }
 
