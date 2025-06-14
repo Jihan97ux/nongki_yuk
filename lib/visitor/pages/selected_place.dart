@@ -183,8 +183,21 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           onTap: () => setState(() => _tabIndex = 0),
                           child: Column(
                             children: [
-                              Text('Overview', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 0 ? Colors.black : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 0) Container(height: 2, width: 80, color: Colors.black, margin: const EdgeInsets.only(top: 4)),
+                              Text(
+                                'Overview',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _tabIndex == 0 ? AppColors.customPurpleLight : AppColors.customPurpleLight.withOpacity(0.5),
+                                  fontSize: 18,
+                                ),
+                              ),
+                              if (_tabIndex == 0)
+                                Container(
+                                  height: 2,
+                                  width: 80,
+                                  color: AppColors.customPurpleLight,
+                                  margin: const EdgeInsets.only(top: 4),
+                                ),
                             ],
                           ),
                         ),
@@ -193,8 +206,21 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           onTap: () => setState(() => _tabIndex = 1),
                           child: Column(
                             children: [
-                              Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Colors.purple : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 1) Container(height: 2, width: 80, color: Colors.purple, margin: const EdgeInsets.only(top: 4)),
+                              Text(
+                                'Review',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _tabIndex == 1 ? AppColors.customPurpleLight : AppColors.customPurpleLight.withOpacity(0.5),
+                                  fontSize: 18,
+                                ),
+                              ),
+                              if (_tabIndex == 1)
+                                Container(
+                                  height: 2,
+                                  width: 80,
+                                  color: AppColors.customPurpleLight,
+                                  margin: const EdgeInsets.only(top: 4),
+                                ),
                             ],
                           ),
                         ),
@@ -334,12 +360,19 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                         ),
                                         const SizedBox(width: 8),
                                         Row(
-                                          children: List.generate(5, (i) => Icon(i < r.rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 18)),
+                                          children: List.generate(5, (i) => Icon(
+                                            i < r.rating ? Icons.star : Icons.star_border,
+                                            color: i < r.rating ? AppColors.customYellow : AppColors.customStarGrey,
+                                            size: 18,
+                                          )),
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
                                           r.rating.toStringAsFixed(1),
-                                          style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            color: AppColors.customPurpleLight,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -349,6 +382,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                       r.comment,
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: AppColors.customTextGrey,
+                                      ),
                                     ),
                                     trailing: appState.currentUser?.id == r.userId
                                         ? PopupMenuButton<String>(
@@ -529,7 +565,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-          backgroundColor: Colors.purple.shade50,
+          backgroundColor: AppColors.customPurpleLight,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -546,7 +582,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: Colors.purple.shade700)),
+                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: AppColors.customPurpleDark)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -588,7 +624,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
+                          backgroundColor: AppColors.customPurpleDark,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
@@ -653,7 +689,7 @@ class _InfoIcon extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: AppDimensions.iconS),
+          Icon(icon, color: AppColors.customPurpleIcon, size: AppDimensions.iconS),
           const SizedBox(width: AppDimensions.paddingXS),
           Flexible(
             child: Text(

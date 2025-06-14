@@ -107,7 +107,9 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       _buildSettingItem(
                         icon: Icons.dark_mode_outlined,
                         title: 'Dark Mode',
-                        onTap: () => _showComingSoon(context, 'Dark mode'),
+                        onTap: () {
+                          context.read<AppState>().toggleTheme();
+                        },
                       ),
 
                       // Privacy and Security

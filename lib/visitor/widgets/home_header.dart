@@ -54,7 +54,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           TextSpan(
                             text: 'Hai, ',
                             style: AppTextStyles.heading3.copyWith(
-                              color: AppColors.primary,
+                              color: AppColors.customPurpleDark,
                             ),
                             children: [
                               TextSpan(
@@ -98,7 +98,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                       child: CircleAvatar(
                         radius: AppDimensions.avatarM / 2,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.customPurpleDark,
                         backgroundImage: user?.profileImageUrl != null
                             ? NetworkImage(user!.profileImageUrl!)
                             : null,

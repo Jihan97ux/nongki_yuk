@@ -56,8 +56,8 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFB39DDB), // Light purple
-              Color(0xFF7B1FA2), // Dark purple
+              AppColors.customPurpleLight, // ungu muda
+              AppColors.customPurpleDark, // ungu tua
             ],
           ),
         ),
@@ -79,7 +79,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                         Text(
                           AppStrings.appName,
                           style: AppTextStyles.heading1.copyWith(
-                            color: Colors.white,
+                            color: AppColors.customWhite,
                             fontSize: 48,
                             fontWeight: FontWeight.w400,
                             fontStyle: FontStyle.italic,
@@ -93,7 +93,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                         Text(
                           AppStrings.appTagline,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.customWhite,
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                           ),
@@ -117,23 +117,24 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                         SizedBox(
                           width: double.infinity,
                           height: 56,
-                          child: ElevatedButton(
+                          child: OutlinedButton(
                             onPressed: () {
                               Navigator.pushNamed(context, AppRoutes.signup);
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFD54F), // Yellow
-                              foregroundColor: Colors.black,
-                              elevation: 0,
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.customYellow, width: 2),
+                              foregroundColor: AppColors.customYellow,
+                              backgroundColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(28),
                               ),
                             ),
                             child: const Text(
-                              'Sign Up',
+                              'SIGN UP',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
+                                color: AppColors.customYellow,
                               ),
                             ),
                           ),
@@ -141,31 +142,31 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
 
                         const SizedBox(height: AppDimensions.paddingL),
 
-                        // Login Link
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Already have an account? ',
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.login);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.customYellow,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                            ),
+                            child: const Text(
+                              'LOGIN',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, AppRoutes.login);
-                              },
-                              child: const Text(
-                                'Log In',
-                                style: TextStyle(
-                                  color: Color(0xFFFFD54F), // Yellow
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),

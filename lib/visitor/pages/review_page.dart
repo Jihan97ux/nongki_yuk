@@ -40,7 +40,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final currentUser = appState.currentUser;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
