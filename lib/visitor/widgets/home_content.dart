@@ -160,7 +160,12 @@ class _HomeContentState extends State<HomeContent> {
       );
     }
 
-    return ContentCard(places: appState.filteredPlaces);
+    return ContentCard(
+      places: appState.searchResults.isNotEmpty
+          ? appState.searchResults
+          : appState.filteredPlaces,
+    );
+
   }
 
   Widget _buildSearchResults(AppState appState) {

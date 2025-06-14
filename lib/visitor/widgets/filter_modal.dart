@@ -28,9 +28,9 @@ class _FilterModalState extends State<FilterModal> {
   List<String> _selectedLabels = [];
   List<String> _selectedAmenities = [];
 
-  final List<String> _availableLabels = ['crowded', 'comfy'];
+  final List<String> _availableLabels = ['Crowded', 'Sedang', 'Comfy'];
   final List<String> _availableAmenities = [
-    'WiFi', 'AC', 'Outdoor Seating', 'Parking', 'Cozy Interior',
+    'WiFi', 'AC', 'Instagramable', 'Parking Area', 'Cozy Interior',
     'Books', 'Garden View', 'Pet Friendly'
   ];
 
@@ -352,13 +352,13 @@ class _FilterModalState extends State<FilterModal> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '\$${_priceRange.start.toInt()}',
+                '\Rp.${_priceRange.start.toInt()}k',
                 style: AppTextStyles.body1.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                '\$${_priceRange.end.toInt()}',
+                '\Rp${_priceRange.end.toInt()}k',
                 style: AppTextStyles.body1.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -512,7 +512,7 @@ class _FilterModalState extends State<FilterModal> {
     }
 
     if (_priceRange != const RangeValues(0, 100)) {
-      summary.add('Price: \$${_priceRange.start.toInt()}-\$${_priceRange.end.toInt()}');
+      summary.add('Price: Rp${_priceRange.start.toInt()}k-Rp${_priceRange.end.toInt()}k'); // Format yang konsisten
     }
 
     if (_maxDistance != 50) {

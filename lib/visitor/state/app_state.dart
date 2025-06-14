@@ -324,27 +324,30 @@ class AppState extends ChangeNotifier {
   void searchPlaces(String query) {
     _searchQuery = query;
 
+    List<Place> results;
+
     if (query.isEmpty) {
-      _searchResults = [];
-      _isAdvancedSearchActive = false;
+      results = List<Place>.from(_places);
     } else {
-      List<Place> results = _places.where((place) {
-        return place.title.toLowerCase().contains(query.toLowerCase()) ||
-            place.address.toLowerCase().contains(query.toLowerCase()) ||
-            place.label.toLowerCase().contains(query.toLowerCase());
+      results = _places.where((place) {
+        final lowerQuery = query.toLowerCase();
+        return place.title.toLowerCase().contains(lowerQuery) ||
+            place.address.toLowerCase().contains(lowerQuery) ||
+            place.label.toLowerCase().contains(lowerQuery);
       }).toList();
-
-      // Apply advanced filters if active
-      if (_searchFilters.hasActiveFilters) {
-        results = _applyAdvancedFilters(results);
-        _isAdvancedSearchActive = true;
-      }
-
-      _searchResults = results;
     }
 
+    if (_searchFilters.hasActiveFilters) {
+      results = _applyAdvancedFilters(results);
+      _isAdvancedSearchActive = true;
+    } else {
+      _isAdvancedSearchActive = false;
+    }
+
+    _searchResults = results;
     notifyListeners();
   }
+
 
   List<Place> _applyAdvancedFilters(List<Place> places) {
     return places.where((place) {
@@ -356,8 +359,12 @@ class AppState extends ChangeNotifier {
         return false;
       }
 
-      // Price filter (extract number from price string like "$40")
-      int price = int.tryParse(place.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      // Price filter (extract number from price string like "Rp.40k")
+      String priceStr = place.price.replaceAll(RegExp(r'[^0-9]'), '');
+      int priceRaw = int.tryParse(priceStr) ?? 0;
+
+      int price = priceRaw > 1000 ? (priceRaw / 1000).round() : priceRaw;
+
       if (_searchFilters.minPrice != null && price < _searchFilters.minPrice!) {
         return false;
       }
@@ -365,24 +372,29 @@ class AppState extends ChangeNotifier {
         return false;
       }
 
-      // Label filter
-      if (_searchFilters.labels.isNotEmpty &&
-          !_searchFilters.labels.contains(place.label.toLowerCase())) {
+      // Distance filter - perbaikan parsing distance
+      String distanceStr = place.distance.replaceAll(RegExp(r'[^0-9.]'), '');
+      double distance = double.tryParse(distanceStr) ?? 0;
+
+      if (_searchFilters.maxDistance != null && distance > _searchFilters.maxDistance!) {
         return false;
+      }
+
+      // Label filter
+      if (_searchFilters.labels.isNotEmpty) {
+        bool hasMatchingLabel = _searchFilters.labels.any((filterLabel) =>
+        place.label.toLowerCase() == filterLabel.toLowerCase());
+        if (!hasMatchingLabel) {
+          return false;
+        }
       }
 
       // Amenities filter
       if (_searchFilters.amenities.isNotEmpty) {
-        bool hasAmenity = _searchFilters.amenities.any((amenity) =>
+        bool allAmenitiesExist = _searchFilters.amenities.every((filterAmenity) =>
             place.amenities.any((placeAmenity) =>
-                placeAmenity.toLowerCase().contains(amenity.toLowerCase())));
-        if (!hasAmenity) return false;
-      }
-
-      // Distance filter
-      if (_searchFilters.maxDistance != null) {
-        double distance = double.tryParse(place.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
-        if (distance > _searchFilters.maxDistance!) {
+            placeAmenity.toLowerCase() == filterAmenity.toLowerCase()));
+        if (!allAmenitiesExist) {
           return false;
         }
       }
@@ -401,20 +413,17 @@ class AppState extends ChangeNotifier {
   // Advanced Search Methods
   void setAdvancedFilters(SearchFilters filters) {
     _searchFilters = filters;
-    if (_searchQuery.isNotEmpty) {
-      searchPlaces(_searchQuery); // Re-apply search with new filters
-    }
+    searchPlaces(_searchQuery);
     notifyListeners();
   }
 
   void clearAdvancedSearch() {
     _searchFilters = SearchFilters();
     _isAdvancedSearchActive = false;
-    if (_searchQuery.isNotEmpty) {
-      searchPlaces(_searchQuery); // Re-apply search without filters
-    }
+    searchPlaces(_searchQuery);
     notifyListeners();
   }
+
 
   // Recent Places Methods
   void addToRecentPlaces(Place place) {
