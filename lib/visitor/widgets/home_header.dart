@@ -183,6 +183,9 @@ class _HomeHeaderState extends State<HomeHeader> {
                   ),
                   onChanged: _onSearchChanged,
                   textInputAction: TextInputAction.search,
+                  onEditingComplete: () {
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
               );
             },

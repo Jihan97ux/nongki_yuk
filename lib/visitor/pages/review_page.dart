@@ -53,94 +53,97 @@ class _ReviewPageState extends State<ReviewPage> {
           style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.network(place.imageUrl, width: double.infinity, height: 220, fit: BoxFit.cover),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(16),
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.network(place.imageUrl, width: double.infinity, height: 220, fit: BoxFit.cover),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(place.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                  Text(place.address, style: const TextStyle(color: Colors.white70, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text('How was your hangout?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) => IconButton(
-                icon: Icon(
-                  index < _rating ? Icons.star : Icons.star_border,
-                  color: Colors.amber,
-                  size: 36,
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                onPressed: () {
-                  setState(() {
-                    _rating = index + 1.0;
-                  });
-                },
-              )),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _controller,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Write your review here...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(place.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(place.address, style: const TextStyle(color: Colors.white70, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
                 ),
-                onPressed: () {
-                  if (_controller.text.trim().isNotEmpty && currentUser != null) {
-                    final review = Review(
-                      id: _reviewId,
-                      userId: currentUser.id,
-                      userName: currentUser.name ?? 'Anonymous',
-                      userAvatarUrl: currentUser.profileImageUrl ?? '',
-                      rating: _rating,
-                      comment: _controller.text.trim(),
-                      createdAt: widget.existingReview?.createdAt ?? DateTime.now(),
-                    );
+              ),
+              const SizedBox(height: 32),
+              const Text('How was your hangout?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) => IconButton(
+                  icon: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 36,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _rating = index + 1.0;
+                    });
+                  },
+                )),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _controller,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Write your review here...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: () {
+                    if (_controller.text.trim().isNotEmpty && currentUser != null) {
+                      final review = Review(
+                        id: _reviewId,
+                        userId: currentUser.id,
+                        userName: currentUser.name ?? 'Anonymous',
+                        userAvatarUrl: currentUser.profileImageUrl ?? '',
+                        rating: _rating,
+                        comment: _controller.text.trim(),
+                        createdAt: widget.existingReview?.createdAt ?? DateTime.now(),
+                      );
 
-                    if (widget.existingReview != null) {
-                      appState.updateReview(place.id, review);
-                    } else {
-                      appState.addReview(place.id, review);
+                      if (widget.existingReview != null) {
+                        appState.updateReview(place.id, review);
+                      } else {
+                        appState.addReview(place.id, review);
+                      }
                     }
-                  }
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  widget.existingReview != null ? 'UPDATE' : 'SUBMIT',
-                  style: const TextStyle(fontWeight: FontWeight.bold)
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    widget.existingReview != null ? 'UPDATE' : 'SUBMIT',
+                    style: const TextStyle(fontWeight: FontWeight.bold)
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

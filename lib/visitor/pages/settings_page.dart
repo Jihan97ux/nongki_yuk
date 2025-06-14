@@ -242,6 +242,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
         ),
@@ -259,28 +260,31 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const Text('Terms and Conditions'),
           ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome to Nongki Yuk!',
-                style: AppTextStyles.subtitle1.copyWith(
-                  fontWeight: FontWeight.bold,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 350),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome to Nongki Yuk!',
+                  style: AppTextStyles.subtitle1.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.paddingM),
-              Text(
-                '1. By using this app, you agree to our terms of service.\n\n'
-                    '2. We respect your privacy and protect your personal data.\n\n'
-                    '3. The app is provided "as is" without any warranties.\n\n'
-                    '4. We reserve the right to update these terms at any time.\n\n'
-                    '5. For any questions, please contact our support team.',
-                style: AppTextStyles.body2.copyWith(
-                  height: 1.5,
+                const SizedBox(height: AppDimensions.paddingM),
+                Text(
+                  '1. By using this app, you agree to our terms of service.\n\n'
+                      '2. We respect your privacy and protect your personal data.\n\n'
+                      '3. The app is provided "as is" without any warranties.\n\n'
+                      '4. We reserve the right to update these terms at any time.\n\n'
+                      '5. For any questions, please contact our support team.',
+                  style: AppTextStyles.body2.copyWith(
+                    height: 1.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         actions: [
@@ -297,6 +301,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
         ),
@@ -314,43 +319,55 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const Text('Rate Our App'),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'How do you like Nongki Yuk!?',
-              style: AppTextStyles.body1,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.paddingL),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                return Icon(
-                  Icons.star,
-                  color: AppColors.accent,
-                  size: 32,
-                );
-              }),
-            ),
-          ],
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 350),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'How do you like Nongki Yuk!?',
+                style: AppTextStyles.body1,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppDimensions.paddingL),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return Icon(
+                    Icons.star,
+                    color: AppColors.accent,
+                    size: 32,
+                  );
+                }),
+              ),
+              const SizedBox(height: AppDimensions.paddingL),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Maybe Later'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ErrorHandler.showSuccessSnackBar(
+                          context,
+                          'Thank you for your rating! ⭐',
+                        );
+                      },
+                      child: const Text('Submit'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Maybe Later'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ErrorHandler.showSuccessSnackBar(
-                context,
-                'Thank you for your rating! ⭐',
-              );
-            },
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
   }
@@ -555,6 +572,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
         ),
@@ -574,36 +592,41 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const Text('About Nongki Yuk!'),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Find the Perfect Hangout on South Jakarta',
-              style: AppTextStyles.subtitle1.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 350),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Find the Perfect Hangout on South Jakarta',
+                  style: AppTextStyles.subtitle1.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingM),
+                Text(
+                  'Version 1.0.0',
+                  style: AppTextStyles.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingS),
+                Text(
+                  'Made with ❤️ for Jakarta hangout enthusiasts',
+                  style: AppTextStyles.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingM),
+                Text(
+                  '© 2024 Nongki Yuk! All rights reserved.',
+                  style: AppTextStyles.caption,
+                ),
+              ],
             ),
-            const SizedBox(height: AppDimensions.paddingM),
-            Text(
-              'Version 1.0.0',
-              style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingS),
-            Text(
-              'Made with ❤️ for Jakarta hangout enthusiasts',
-              style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingM),
-            Text(
-              '© 2024 Nongki Yuk! All rights reserved.',
-              style: AppTextStyles.caption,
-            ),
-          ],
+          ),
         ),
         actions: [
           TextButton(

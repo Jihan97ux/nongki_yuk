@@ -565,7 +565,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-          backgroundColor: AppColors.customPurpleLight,
+          backgroundColor: AppColors.customWhite,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(

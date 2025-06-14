@@ -68,24 +68,27 @@ class _HomeContentState extends State<HomeContent> {
                 horizontal: AppDimensions.paddingM,
                 vertical: AppDimensions.paddingS,
               ),
-              child: Row(
-                children: [
-                  _buildTab(
-                    AppStrings.mostViewed,
-                    PlaceFilter.mostViewed,
-                    appState.selectedFilter == PlaceFilter.mostViewed,
-                  ),
-                  _buildTab(
-                    AppStrings.nearby,
-                    PlaceFilter.nearby,
-                    appState.selectedFilter == PlaceFilter.nearby,
-                  ),
-                  _buildTab(
-                    AppStrings.latest,
-                    PlaceFilter.latest,
-                    appState.selectedFilter == PlaceFilter.latest,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab(
+                      AppStrings.mostViewed,
+                      PlaceFilter.mostViewed,
+                      appState.selectedFilter == PlaceFilter.mostViewed,
+                    ),
+                    _buildTab(
+                      AppStrings.nearby,
+                      PlaceFilter.nearby,
+                      appState.selectedFilter == PlaceFilter.nearby,
+                    ),
+                    _buildTab(
+                      AppStrings.latest,
+                      PlaceFilter.latest,
+                      appState.selectedFilter == PlaceFilter.latest,
+                    ),
+                  ],
+                ),
               ),
             ),
 
