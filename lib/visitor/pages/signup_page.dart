@@ -95,7 +95,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
       if (mounted) {
         if (appState.authStatus == AuthStatus.authenticated) {
           ErrorHandler.showSuccessSnackBar(context, 'Account created successfully!');
-          Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
         } else if (appState.authError != null) {
           ErrorHandler.showErrorSnackBar(context, appState.authError!);
         }
