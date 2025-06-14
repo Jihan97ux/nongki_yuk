@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Light Theme Colors
   static const Color primary = Color(0xFF7B1FA2); // Dark purple
   static const Color secondary = Color(0xFF2E2380); // Light purple
   static const Color accent = Color(0xFFFFD54F); // Yellow
-  static const Color background = Color(0xFFFBEAFF);
+  static const Color background = customWhite; // Use customWhite for global background
   static const Color surface = Colors.white;
   static const Color error = Colors.red;
 
@@ -28,6 +29,33 @@ class AppColors {
 
   // Shadow
   static Color shadowColor = Colors.grey.withOpacity(0.3);
+
+  // Dark Theme Colors
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkPrimary = Color(0xFFBB86FC);
+  static const Color darkSecondary = Color(0xFF03DAC6);
+  static const Color darkError = Color(0xFFCF6679);
+  
+  // Dark Theme Text Colors
+  static const Color darkTextPrimary = Colors.white;
+  static const Color darkTextSecondary = Colors.white70;
+  
+  // Dark Theme Input Colors
+  static const Color darkInputFill = Color(0xFF2C2C2C);
+  static const Color darkInputHint = Colors.white54;
+  
+  // Dark Theme Shadow
+  static Color darkShadowColor = Colors.black.withOpacity(0.3);
+
+  // Custom Colors from user instructions
+  static const Color customPurpleLight = Color(0xFF9F8AC2); // ungu muda
+  static const Color customPurpleDark = Color(0xFF3A2D72); // pure ungu / ungu tua
+  static const Color customPurpleIcon = Color(0xFF5C269D); // ungu tua untuk icon
+  static const Color customYellow = Color(0xFFF4D50B); // kuning
+  static const Color customWhite = Color(0xFFFFFFFF); // putih
+  static const Color customStarGrey = Color(0xFFCAC8C8); // abu bintang
+  static const Color customTextGrey = Color(0xFF444444); // abu teks
 }
 
 class AppTextStyles {

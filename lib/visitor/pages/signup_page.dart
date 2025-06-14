@@ -110,6 +110,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -151,11 +152,10 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                   // App Title - Responsive font size
                                   Text(
                                     AppStrings.appName,
-                                    style: AppTextStyles.heading1.copyWith(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                       fontSize: constraints.maxHeight > 700 ? 48 : 36,
                                       fontWeight: FontWeight.w400,
-                                      fontStyle: FontStyle.italic,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -168,7 +168,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                   Text(
                                     AppStrings.appTagline,
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                       fontSize: constraints.maxHeight > 700 ? 16 : 14,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -237,7 +237,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                             suffixIcon: IconButton(
                                               icon: Icon(
                                                 _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                                                color: Colors.grey,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                               onPressed: () {
                                                 setState(() {
@@ -264,22 +264,22 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                                       : _handleSignUp,
                                                   style: ElevatedButton.styleFrom(
                                                     backgroundColor: const Color(0xFFFFD54F),
-                                                    foregroundColor: Colors.black,
+                                                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
                                                     elevation: 0,
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(28),
                                                     ),
                                                   ),
                                                   child: appState.authStatus == AuthStatus.loading
-                                                      ? const SizedBox(
+                                                      ? SizedBox(
                                                     width: 24,
                                                     height: 24,
                                                     child: CircularProgressIndicator(
                                                       strokeWidth: 2,
-                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onSecondary),
                                                     ),
                                                   )
-                                                      : const Text(
+                                                      : Text(
                                                     'Sign Up',
                                                     style: TextStyle(
                                                       fontSize: 18,
@@ -297,10 +297,10 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Already have an account? ',
                                                 style: TextStyle(
-                                                  color: Colors.black,
+                                                  color: Theme.of(context).colorScheme.onSurface,
                                                   fontSize: 16,
                                                 ),
                                               ),
@@ -308,7 +308,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
                                                 onTap: () {
                                                   Navigator.pushReplacementNamed(context, AppRoutes.login);
                                                 },
-                                                child: const Text(
+                                                child: Text(
                                                   'Log In',
                                                   style: TextStyle(
                                                     color: Color(0xFFFFD54F),
@@ -362,8 +362,8 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
       validator: validator,
       obscureText: obscureText,
       onFieldSubmitted: onFieldSubmitted,
-      style: const TextStyle(
-        color: Colors.black,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
         fontSize: 16,
       ),
       decoration: InputDecoration(

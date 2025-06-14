@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_content.dart';
 import '../widgets/home_footer.dart';
+import '../constants/app_constants.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,7 +10,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFBEAFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: const [

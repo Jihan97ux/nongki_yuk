@@ -60,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<AppState>(
         builder: (context, appState, child) {
           final user = appState.currentUser;
@@ -72,16 +72,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               Container(
                 height: MediaQuery.of(context).size.height * 0.5, // Increased height
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFB39DDB), // Light purple
-                      Color(0xFF9575CD), // Medium purple
-                      Color(0xFF7B1FA2), // Dark purple
-                    ],
-                    stops: [0.0, 0.6, 1.0],
-                  ),
+                  color: AppColors.customPurpleDark,
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(32),
                     bottomRight: Radius.circular(32),

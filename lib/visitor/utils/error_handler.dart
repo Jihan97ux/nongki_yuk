@@ -6,14 +6,14 @@ class ErrorHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
         action: SnackBarAction(
           label: 'Dismiss',
-          textColor: Colors.white,
+          textColor: Theme.of(context).colorScheme.onError,
           onPressed: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
@@ -49,8 +49,8 @@ class ErrorHandler {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                 ),
                 const SizedBox(width: AppDimensions.paddingM),
                 Text(message, style: AppTextStyles.subtitle2),
@@ -96,7 +96,7 @@ class CustomErrorWidget extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary,
               ),
             ),
             if (onRetry != null) ...[
@@ -124,15 +124,15 @@ class LoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
           ),
           if (message != null) ...[
             const SizedBox(height: AppDimensions.paddingM),
             Text(
               message!,
-              style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary,
               ),
             ),
           ],
@@ -174,7 +174,7 @@ class EmptyStateWidget extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary,
               ),
             ),
             if (onAction != null && actionText != null) ...[
@@ -226,9 +226,9 @@ class NetworkImageWithError extends StatelessWidget {
               color: Colors.grey.shade200,
               borderRadius: borderRadius,
             ),
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
               ),
             ),
           );

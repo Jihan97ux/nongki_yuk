@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import '../widgets/home_footer.dart';
 
 class RecentPlacesPage extends StatelessWidget {
   const RecentPlacesPage({super.key});
@@ -10,70 +11,142 @@ class RecentPlacesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('History', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-      ),
-      body: Consumer<AppState>(
-        builder: (context, appState, child) {
-          final recentPlaces = appState.recentPlaces;
-          if (recentPlaces.isEmpty) {
-            return const Center(child: Text('No recent places.'));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: recentPlaces.length,
-            itemBuilder: (context, index) {
-              final recentPlace = recentPlaces[index];
-              final place = recentPlace.place;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.pink.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(place.imageUrl, width: 56, height: 56, fit: BoxFit.cover),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Back button and title
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  title: Text(place.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(place.address, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Text('Start from IDR ${place.price}', style: const TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          const SizedBox(width: 2),
-                          Text(place.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ],
+                  const SizedBox(width: 8),
+                  const Text('History', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  final recentPlaces = appState.recentPlaces;
+                  if (recentPlaces.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No recent places.',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/selected-place', arguments: place);
-                  },
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: recentPlaces.length,
+                    itemBuilder: (context, index) {
+                      final recentPlace = recentPlaces[index];
+                      final place = recentPlace.place;
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/review',
+                            arguments: place,
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF2D223A)
+                                : const Color(0xFFF8EAFE),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  place.imageUrl,
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      place.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      place.address,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black.withOpacity(0.6),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Start from IDR ${place.price}',
+                                      style: TextStyle(
+                                        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFD1B3FF) : const Color(0xFF7B1FA2),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 16),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.star, color: const Color(0xFFFFD54F), size: 18),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      place.rating.toString(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            // Bottom navigation bar
+            const HomeFooter(),
+          ],
+        ),
       ),
     );
   }

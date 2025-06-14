@@ -4,7 +4,6 @@ import '../models/place_model.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SelectedPlacePage extends StatefulWidget {
   final Place? place;
@@ -443,9 +442,12 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                               style: AppTextStyles.button,
                             ),
                             onPressed: () {
-                              // appState.addToRecentPlaces(currentPlace!);
-                              _showNavigationDialog(context, currentPlace!);
-                              // _showNavigationDialog(context, currentPlace);
+                              appState.addToRecentPlaces(currentPlace!);
+                              ErrorHandler.showSuccessSnackBar(
+                                context,
+                                '🎉 Have fun at ${currentPlace.title}!',
+                              );
+                              _showNavigationDialog(context, currentPlace);
                             },
                           ),
                         );
@@ -571,29 +573,29 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        onPressed: () async {
-                          final lat = place.location.lat;
-                          final lng = place.location.lng;
-                          final name = Uri.encodeComponent(place.title);
-                          final url = 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng($name)';
-
-                          if (await canLaunchUrl(Uri.parse(url))) {
-                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                            final appState = Provider.of<AppState>(context, listen: false);
-                            appState.addToRecentPlaces(place);
-                          } else {
-                            ErrorHandler.showErrorSnackBar(
-                              context,
-                              'Could not open directions to ${place.title}',
-                            );
-                          }
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          // TODO: Open Google Maps
                         },
-                        child: const Text(
-                          'Open Maps',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        child: const Text('Open Maps', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
-                    )
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
                   ],
                 ),
               ],

@@ -130,6 +130,9 @@ class AppState extends ChangeNotifier {
   // Review state
   final Map<String, List<Review>> _reviews = {};
 
+  // Theme state
+  bool _isDarkMode = false;
+
   // Getters
   AuthStatus get authStatus => _authStatus;
   User? get currentUser => _currentUser;
@@ -157,6 +160,9 @@ class AppState extends ChangeNotifier {
 
   // Review Getters
   Map<String, List<Review>> get reviews => _reviews;
+
+  // Theme Getters
+  bool get isDarkMode => _isDarkMode;
 
   // Authentication methods
   Future<void> signIn(String email, String password) async {
@@ -562,5 +568,16 @@ class AppState extends ChangeNotifier {
 
   List<Review> getReviews(String placeId) {
     return _reviews[placeId] ?? [];
+  }
+
+  // Theme methods
+  void setAuthStatus(AuthStatus status) {
+    _authStatus = status;
+    notifyListeners();
+  }
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
   }
 }

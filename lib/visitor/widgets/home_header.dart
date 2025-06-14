@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
-import '../widgets/advanced_search_modal.dart';
+import '../widgets/filter_modal.dart';
 
 class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
@@ -30,8 +30,8 @@ class _HomeHeaderState extends State<HomeHeader> {
     Provider.of<AppState>(context, listen: false).clearSearch();
   }
 
-  void _showAdvancedSearch() {
-    AdvancedSearchModal.show(context);
+  void _showFilter() {
+    FilterModal.show(context);
   }
 
   @override
@@ -54,7 +54,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           TextSpan(
                             text: 'Hai, ',
                             style: AppTextStyles.heading3.copyWith(
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.onBackground,
                             ),
                             children: [
                               TextSpan(
@@ -68,7 +68,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                         Text(
                           'Nongki dimana hari ini?',
                           style: AppTextStyles.subtitle2.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -90,7 +90,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -98,7 +98,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                       child: CircleAvatar(
                         radius: AppDimensions.avatarM / 2,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? AppColors.customPurpleDark,
                         backgroundImage: user?.profileImageUrl != null
                             ? NetworkImage(user!.profileImageUrl!)
                             : null,
@@ -108,7 +108,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                               ? user!.name[0].toUpperCase()
                               : 'U',
                           style: AppTextStyles.subtitle1.copyWith(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         )
@@ -166,16 +166,16 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     child: Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.accent,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.secondary,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
                                   ),
                               ],
                             ),
-                            onPressed: _showAdvancedSearch,
-                            tooltip: 'Advanced Search',
+                            onPressed: _showFilter,
+                            tooltip: 'Filter',
                           ),
                         ),
                       ],
@@ -183,6 +183,9 @@ class _HomeHeaderState extends State<HomeHeader> {
                   ),
                   onChanged: _onSearchChanged,
                   textInputAction: TextInputAction.search,
+                  onEditingComplete: () {
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
               );
             },
@@ -203,10 +206,10 @@ class _HomeHeaderState extends State<HomeHeader> {
                         vertical: AppDimensions.paddingXS,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                         border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
@@ -215,13 +218,13 @@ class _HomeHeaderState extends State<HomeHeader> {
                           Icon(
                             Icons.filter_alt,
                             size: 16,
-                            color: AppColors.primary,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           const SizedBox(width: AppDimensions.paddingXS),
                           Text(
-                            'Advanced filters active',
+                            'Filter active',
                             style: AppTextStyles.body2.copyWith(
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -234,13 +237,13 @@ class _HomeHeaderState extends State<HomeHeader> {
                         appState.clearAdvancedSearch();
                         ErrorHandler.showSuccessSnackBar(
                           context,
-                          'Advanced filters cleared',
+                          'Filter cleared',
                         );
                       },
                       child: Text(
                         'Clear',
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.primary,
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

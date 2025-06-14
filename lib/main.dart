@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
-// Import all pages
 import 'visitor/pages/landing_page.dart';
 import 'visitor/pages/login_page.dart';
 import 'visitor/pages/signup_page.dart';
@@ -15,14 +12,8 @@ import 'visitor/pages/recent_places_page.dart';
 import 'visitor/pages/settings_page.dart';
 import 'visitor/pages/favorite_places_page.dart';
 import 'visitor/pages/review_page.dart';
-
-//Import model
 import 'visitor/models/place_model.dart';
-
-// Import state management
 import 'visitor/state/app_state.dart';
-
-// Import constants and utilities
 import 'visitor/constants/app_constants.dart';
 import 'visitor/theme/app_theme.dart';
 import 'visitor/utils/error_handler.dart';
@@ -50,7 +41,8 @@ class MyApp extends StatelessWidget {
             title: AppStrings.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
-
+            darkTheme: AppTheme.darkTheme,
+            themeMode: appState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: appState.authStatus == AuthStatus.authenticated
                 ? const HomePage()
                 : const LandingPage(),
