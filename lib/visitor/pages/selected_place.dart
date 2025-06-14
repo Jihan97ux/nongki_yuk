@@ -39,7 +39,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                 ? AppDimensions.cardImageHeight
                 : constraints.maxHeight * 0.35;
             return Column(
-              children: [
+              children: <Widget>[
                 // Top image with rounded corners and overlay card
                 Padding(
                   padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
@@ -177,6 +177,105 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     ],
                   ),
                 ),
+                if (_tabIndex == 1)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Builder(
+                        builder: (context) {
+                          final currentUser = appState.currentUser;
+                          Review? userReview;
+                          if (currentUser != null) {
+                            try {
+                              userReview = reviews.firstWhere((r) => r.userId == currentUser.id);
+                            } catch (e) {
+                              userReview = null;
+                            }
+                          } else {
+                            userReview = null;
+                          }
+                          final List<Review> otherReviews = userReview == null
+                              ? reviews
+                              : reviews.where((r) => r.userId != currentUser?.id).toList();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (userReview != null) ...[
+                                _ReviewCard(review: userReview, highlight: true),
+                                const SizedBox(height: 12),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: SizedBox(
+                                    height: 36,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.yellow,
+                                        foregroundColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/review',
+                                          arguments: currentPlace!,
+                                        );
+                                      },
+                                      child: const Text('Edit Review'),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ] else ...[
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 48,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.yellow,
+                                        foregroundColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/review',
+                                          arguments: currentPlace!,
+                                        );
+                                      },
+                                      child: const Text('Review'),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              if (reviews.isEmpty)
+                                Center(
+                                  child: Text(
+                                    'No reviews yet. Be the first to review!',
+                                    style: TextStyle(color: Theme.of(context).disabledColor),
+                                  ),
+                                ),
+                              if (otherReviews.isNotEmpty)
+                                ...otherReviews.map((review) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _ReviewCard(review: review),
+                                    )),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 // Info Row (time, label, rating)
                 Padding(
                   padding: const EdgeInsets.only(top: 24, left: 32, right: 32),
@@ -185,17 +284,17 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     children: [
                       _InfoIcon(
                         icon: Icons.access_time,
-                        label: currentPlace.operatingHours,
+                        label: currentPlace!.operatingHours,
                       ),
                       const SizedBox(width: 16),
                       _InfoIcon(
                         icon: Icons.local_offer,
-                        label: currentPlace.label,
+                        label: currentPlace!.label,
                       ),
                       const SizedBox(width: 16),
                       _InfoIcon(
                         icon: Icons.star,
-                        label: currentPlace.rating.toString(),
+                        label: currentPlace!.rating.toString(),
                       ),
                     ],
                   ),
@@ -204,7 +303,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16, left: 32, right: 32),
                   child: Text(
-                    currentPlace.address,
+                    currentPlace!.address,
                     style: TextStyle(
                       color: Theme.of(context).disabledColor,
                       fontSize: 14,
@@ -237,9 +336,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         appState.addToRecentPlaces(currentPlace!);
                         ErrorHandler.showSuccessSnackBar(
                           context,
-                          '🎉 Have fun at \\${currentPlace.title}!',
+                          '🎉 Have fun at \\${currentPlace!.title}!',
                         );
-                        _showNavigationDialog(context, currentPlace);
+                        _showNavigationDialog(context, currentPlace!);
                       },
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -524,6 +623,82 @@ class NetworkImageWithError extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  final Review review;
+  final bool highlight;
+  const _ReviewCard({required this.review, this.highlight = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: highlight ? Colors.yellow.withOpacity(0.2) : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: highlight ? Border.all(color: Colors.yellow, width: 2) : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            backgroundImage: NetworkImage(review.userAvatarUrl),
+            radius: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      review.userName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: highlight ? Colors.amber[900] : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: List.generate(5, (i) => Icon(
+                        i < review.rating.round() ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 18,
+                      )),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      review.rating.toStringAsFixed(1),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  review.comment,
+                  style: TextStyle(fontSize: 15),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -48,7 +48,11 @@ class RecentPlacesPage extends StatelessWidget {
                       final place = recentPlace.place;
                       return GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.review, arguments: place);
+                          Navigator.pushNamed(
+                            context,
+                            '/review',
+                            arguments: place,
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 20),
