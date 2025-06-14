@@ -4,6 +4,7 @@ import '../models/place_model.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
+import '../widgets/home_footer.dart';
 
 class SelectedPlacePage extends StatefulWidget {
   final Place? place;
@@ -177,178 +178,175 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     ],
                   ),
                 ),
-                if (_tabIndex == 1)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      child: Builder(
-                        builder: (context) {
-                          final currentUser = appState.currentUser;
-                          Review? userReview;
-                          if (currentUser != null) {
-                            try {
-                              userReview = reviews.firstWhere((r) => r.userId == currentUser.id);
-                            } catch (e) {
-                              userReview = null;
-                            }
-                          } else {
-                            userReview = null;
-                          }
-                          final List<Review> otherReviews = userReview == null
-                              ? reviews
-                              : reviews.where((r) => r.userId != currentUser?.id).toList();
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (userReview != null) ...[
-                                _ReviewCard(review: userReview, highlight: true),
-                                const SizedBox(height: 12),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: SizedBox(
-                                    height: 36,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.yellow,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/review',
-                                          arguments: currentPlace!,
-                                        );
-                                      },
-                                      child: const Text('Edit Review'),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                              ] else ...[
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    height: 48,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.yellow,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/review',
-                                          arguments: currentPlace!,
-                                        );
-                                      },
-                                      child: const Text('Review'),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              if (reviews.isEmpty)
-                                Center(
-                                  child: Text(
-                                    'No reviews yet. Be the first to review!',
-                                    style: TextStyle(color: Theme.of(context).disabledColor),
-                                  ),
-                                ),
-                              if (otherReviews.isNotEmpty)
-                                ...otherReviews.map((review) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
-                                      child: _ReviewCard(review: review),
-                                    )),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                // Info Row (time, label, rating)
-                Padding(
-                  padding: const EdgeInsets.only(top: 24, left: 32, right: 32),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                Expanded(
+                  child: IndexedStack(
+                    index: _tabIndex,
                     children: [
-                      _InfoIcon(
-                        icon: Icons.access_time,
-                        label: currentPlace!.operatingHours,
+                      // Overview Tab
+                      SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Info Row (time, label, rating)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 24, left: 32, right: 32),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  _InfoIcon(
+                                    icon: Icons.access_time,
+                                    label: currentPlace!.operatingHours,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _InfoIcon(
+                                    icon: Icons.local_offer,
+                                    label: currentPlace!.label,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _InfoIcon(
+                                    icon: Icons.star,
+                                    label: currentPlace!.rating.toString(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Address (greyed out)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16, left: 32, right: 32),
+                              child: Text(
+                                currentPlace!.address,
+                                style: TextStyle(
+                                  color: Theme.of(context).disabledColor,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Spacer
+                            const SizedBox(height: 24),
+                            // GO Button
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFFD54F),
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    appState.addToRecentPlaces(currentPlace!);
+                                    ErrorHandler.showSuccessSnackBar(
+                                      context,
+                                      '🎉 Have fun at \\${currentPlace!.title}!',
+                                    );
+                                    _showNavigationDialog(context, currentPlace!);
+                                  },
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('GO'),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.send, size: 22),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 16),
-                      _InfoIcon(
-                        icon: Icons.local_offer,
-                        label: currentPlace!.label,
-                      ),
-                      const SizedBox(width: 16),
-                      _InfoIcon(
-                        icon: Icons.star,
-                        label: currentPlace!.rating.toString(),
+                      // Review Tab
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Builder(
+                            builder: (context) {
+                              final currentUser = appState.currentUser;
+                              Review? userReview;
+                              if (currentUser != null) {
+                                try {
+                                  userReview = reviews.firstWhere((r) => r.userId == currentUser.id);
+                                } catch (e) {
+                                  userReview = null;
+                                }
+                              } else {
+                                userReview = null;
+                              }
+                              // Hanya tampilkan review user jika ada, jika tidak ada tampilkan button untuk review
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (userReview != null) ...[
+                                    _ReviewCard(review: userReview, highlight: true),
+                                    const SizedBox(height: 12),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: SizedBox(
+                                        height: 36,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.yellow,
+                                            foregroundColor: Colors.black,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                                            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/review',
+                                              arguments: currentPlace!,
+                                            );
+                                          },
+                                          child: const Text('Edit Review'),
+                                        ),
+                                      ),
+                                    ),
+                                  ] else ...[
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: 48,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.yellow,
+                                            foregroundColor: Colors.black,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/review',
+                                              arguments: currentPlace!,
+                                            );
+                                          },
+                                          child: const Text('Review'),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ],
-                  ),
-                ),
-                // Address (greyed out)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, left: 32, right: 32),
-                  child: Text(
-                    currentPlace!.address,
-                    style: TextStyle(
-                      color: Theme.of(context).disabledColor,
-                      fontSize: 14,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                // Spacer
-                const Spacer(),
-                // GO Button
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD54F),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      onPressed: () {
-                        appState.addToRecentPlaces(currentPlace!);
-                        ErrorHandler.showSuccessSnackBar(
-                          context,
-                          '🎉 Have fun at \\${currentPlace!.title}!',
-                        );
-                        _showNavigationDialog(context, currentPlace!);
-                      },
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('GO'),
-                          SizedBox(width: 8),
-                          Icon(Icons.send, size: 22),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -356,6 +354,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
           },
         ),
       ),
+      bottomNavigationBar: const HomeFooter(),
     );
   }
 

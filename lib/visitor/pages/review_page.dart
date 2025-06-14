@@ -41,127 +41,102 @@ class _ReviewPageState extends State<ReviewPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.existingReview != null ? 'Edit Review' : 'Write Review',
-          style: TextStyle(
-            color: Theme.of(context).appBarTheme.foregroundColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Image.network(place.imageUrl, width: double.infinity, height: 220, fit: BoxFit.cover),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 24, left: 24, right: 24, top: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.network(place.imageUrl, width: double.infinity, height: 220, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              place.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              place.address,
+              style: TextStyle(
+                color: Theme.of(context).disabledColor,
+                fontSize: 14,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            const Text('How was your hangout?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) => IconButton(
+                icon: Icon(
+                  index < _rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 36,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      place.title,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      place.address,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                onPressed: () {
+                  setState(() {
+                    _rating = index + 1.0;
+                  });
+                },
+              )),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Write your review here...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow,
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-              ),
-              const SizedBox(height: 32),
-              const Text('How was your hangout?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) => IconButton(
-                  icon: Icon(
-                    index < _rating ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
-                    size: 36,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _rating = index + 1.0;
-                    });
-                  },
-                )),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Write your review here...',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.yellow,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onPressed: () {
-                    if (_controller.text.trim().isNotEmpty && currentUser != null) {
-                      final review = Review(
-                        id: _reviewId,
-                        userId: currentUser.id,
-                        userName: currentUser.name ?? 'Anonymous',
-                        userAvatarUrl: currentUser.profileImageUrl ?? '',
-                        rating: _rating,
-                        comment: _controller.text.trim(),
-                        createdAt: widget.existingReview?.createdAt ?? DateTime.now(),
-                      );
+                onPressed: () {
+                  if (_controller.text.trim().isNotEmpty && currentUser != null) {
+                    final review = Review(
+                      id: _reviewId,
+                      userId: currentUser.id,
+                      userName: currentUser.name ?? 'Anonymous',
+                      userAvatarUrl: currentUser.profileImageUrl ?? '',
+                      rating: _rating,
+                      comment: _controller.text.trim(),
+                      createdAt: widget.existingReview?.createdAt ?? DateTime.now(),
+                    );
 
-                      if (widget.existingReview != null) {
-                        appState.updateReview(place.id, review);
-                      } else {
-                        appState.addReview(place.id, review);
-                      }
+                    if (widget.existingReview != null) {
+                      appState.updateReview(place.id, review);
+                    } else {
+                      appState.addReview(place.id, review);
                     }
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    widget.existingReview != null ? 'UPDATE' : 'SUBMIT',
-                    style: const TextStyle(fontWeight: FontWeight.bold)
-                  ),
+                  }
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  widget.existingReview != null ? 'UPDATE' : 'SUBMIT',
+                  style: const TextStyle(fontWeight: FontWeight.bold)
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

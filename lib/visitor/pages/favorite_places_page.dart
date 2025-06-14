@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
+import '../widgets/home_footer.dart';
 
 class FavoritePlacesPage extends StatelessWidget {
   const FavoritePlacesPage({super.key});
@@ -128,43 +129,10 @@ class FavoritePlacesPage extends StatelessWidget {
                 },
               ),
             ),
-            // Bottom navigation bar
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: BottomNavigationBar(
-                  currentIndex: 2,
-                  onTap: (index) {
-                    // Implement navigation logic for each tab
-                  },
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home_outlined),
-                      label: 'Home',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.access_time),
-                      label: 'History',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.favorite),
-                      label: 'Favorites',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.settings),
-                      label: 'Settings',
-                    ),
-                  ],
-                  type: BottomNavigationBarType.fixed,
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: Colors.grey,
-                  showUnselectedLabels: true,
-                ),
-              ),
-            ),
           ],
         ),
       ),
+      bottomNavigationBar: const HomeFooter(),
     );
   }
 } 
