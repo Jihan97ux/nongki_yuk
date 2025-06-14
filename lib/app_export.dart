@@ -26,7 +26,7 @@ export 'visitor/widgets/home_footer.dart';
 export 'visitor/widgets/content_card.dart';
 
 // Widgets - Advanced Search
-export 'visitor/widgets/advanced_search_modal.dart';
+export 'visitor/widgets/filter_modal.dart';
 
 // Pages
 export 'visitor/pages/landing_page.dart';

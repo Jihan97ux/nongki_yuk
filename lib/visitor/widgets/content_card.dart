@@ -109,12 +109,12 @@ class ContentCard extends StatelessWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? AppColors.error : AppColors.textWhite,
+                          color: isFavorite ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onPrimary,
                           size: AppDimensions.iconM,
                         ),
                       ),
@@ -129,7 +129,7 @@ class ContentCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                       ),
                       child: Column(
@@ -138,7 +138,7 @@ class ContentCard extends StatelessWidget {
                           Text(
                             place.title,
                             style: AppTextStyles.body1.copyWith(
-                              color: AppColors.textWhite,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
@@ -149,9 +149,9 @@ class ContentCard extends StatelessWidget {
 
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.location_on,
-                                color: AppColors.textWhite,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 size: AppDimensions.iconS,
                               ),
                               const SizedBox(width: AppDimensions.paddingXS),
@@ -159,23 +159,23 @@ class ContentCard extends StatelessWidget {
                                 child: Text(
                                   place.address,
                                   style: AppTextStyles.body2.copyWith(
-                                    color: AppColors.textWhite,
+                                    color: Theme.of(context).colorScheme.onPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: AppDimensions.paddingS),
-                              const Icon(
+                              Icon(
                                 Icons.star,
-                                color: AppColors.accent,
+                                color: Theme.of(context).colorScheme.secondary,
                                 size: AppDimensions.iconS,
                               ),
                               const SizedBox(width: AppDimensions.paddingXS),
                               Text(
                                 place.rating.toString(),
                                 style: AppTextStyles.body2.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               ),
                             ],
@@ -185,23 +185,23 @@ class ContentCard extends StatelessWidget {
 
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.directions_walk,
-                                color: AppColors.textWhite,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 size: AppDimensions.iconS,
                               ),
                               const SizedBox(width: AppDimensions.paddingXS),
                               Text(
                                 place.distance,
                                 style: AppTextStyles.body2.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               ),
                               const Spacer(),
                               Text(
                                 '\Rp.${place.price}',
-                                style: AppTextStyles.body1.copyWith(
-                                  color: AppColors.accent,
+                                style: AppTextStyles.body2.copyWith(
+                                  color: Theme.of(context).colorScheme.secondary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -235,7 +235,7 @@ class ContentCard extends StatelessWidget {
                   ? loadingProgress.cumulativeBytesLoaded /
                   loadingProgress.expectedTotalBytes!
                   : null,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
               strokeWidth: 2,
             ),
           ),

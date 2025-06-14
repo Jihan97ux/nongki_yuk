@@ -53,7 +53,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -66,9 +66,9 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.arrow_back,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(width: AppDimensions.paddingM),
@@ -185,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         child: InkWell(
           onTap: onTap,
@@ -202,12 +202,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   decoration: BoxDecoration(
                     color: isDestructive
                         ? Colors.red.withOpacity(0.1)
-                        : AppColors.primary.withOpacity(0.1),
+                        : Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   ),
                   child: Icon(
                     icon,
-                    color: isDestructive ? Colors.red : AppColors.primary,
+                    color: isDestructive ? Colors.red : Theme.of(context).colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -216,14 +216,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   child: Text(
                     title,
                     style: AppTextStyles.subtitle1.copyWith(
-                      color: isDestructive ? Colors.red : AppColors.textPrimary,
+                      color: isDestructive ? Colors.red : Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).iconTheme.color,
                   size: 20,
                 ),
               ],
@@ -251,17 +251,20 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingS),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
-              child: const Icon(Icons.description, color: AppColors.primary, size: 20),
+              child: Icon(Icons.description, color: Theme.of(context).colorScheme.primary, size: 20),
             ),
             const SizedBox(width: AppDimensions.paddingM),
-            const Text('Terms and Conditions'),
+            Text('Terms and Conditions', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
         content: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 350),
+          constraints: BoxConstraints(
+            maxWidth: 350,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,6 +273,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   'Welcome to Nongki Yuk!',
                   style: AppTextStyles.subtitle1.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingM),
@@ -281,6 +285,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       '5. For any questions, please contact our support team.',
                   style: AppTextStyles.body2.copyWith(
                     height: 1.5,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -290,7 +295,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -310,24 +315,27 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingS),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
-              child: const Icon(Icons.star, color: AppColors.accent, size: 20),
+              child: Icon(Icons.star, color: Theme.of(context).colorScheme.secondary, size: 20),
             ),
             const SizedBox(width: AppDimensions.paddingM),
-            const Text('Rate Our App'),
+            Text('Rate Our App', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
         content: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 350),
+          constraints: BoxConstraints(
+            maxWidth: 350,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'How do you like Nongki Yuk!?',
-                style: AppTextStyles.body1,
+                style: AppTextStyles.body1.copyWith(color: Theme.of(context).colorScheme.onSurface),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.paddingL),
@@ -336,7 +344,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 children: List.generate(5, (index) {
                   return Icon(
                     Icons.star,
-                    color: AppColors.accent,
+                    color: Theme.of(context).colorScheme.secondary,
                     size: 32,
                   );
                 }),
@@ -347,7 +355,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Maybe Later'),
+                      child: Text('Maybe Later', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -360,7 +368,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                           'Thank you for your rating! ⭐',
                         );
                       },
-                      child: const Text('Submit'),
+                      child: Text('Submit', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
                     ),
                   ),
                 ],
@@ -388,7 +396,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             Text(
               'Help your friends discover amazing hangout places!',
               style: AppTextStyles.body1.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -397,12 +405,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusM),
               ),
               child: Text(
                 'Check out Nongki Yuk! - the best app to find hangout places in South Jakarta! 🏃‍♀️',
-                style: AppTextStyles.body2,
+                style: AppTextStyles.body2.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -436,8 +446,8 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         maxChildSize: 0.9,
         minChildSize: 0.5,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onPrimary,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(AppDimensions.radiusXL),
             ),
@@ -460,12 +470,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingS),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.help_outline,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 20,
                       ),
                     ),
@@ -502,6 +512,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     ),
                     const SizedBox(height: AppDimensions.paddingL),
                     Card(
+                      color: Theme.of(context).cardColor,
                       child: Padding(
                         padding: const EdgeInsets.all(AppDimensions.paddingL),
                         child: Column(
@@ -511,20 +522,21 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                               'Still need help?',
                               style: AppTextStyles.subtitle1.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.paddingS),
                             Text(
                               'Contact our support team at:',
                               style: AppTextStyles.body2.copyWith(
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                             const SizedBox(height: AppDimensions.paddingS),
                             Text(
                               'support@nongkiyuk.com',
                               style: AppTextStyles.body1.copyWith(
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -544,12 +556,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
   Widget _buildFAQItem(String question, String answer) {
     return Card(
+      color: Theme.of(context).cardColor,
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
       child: ExpansionTile(
         title: Text(
           question,
           style: AppTextStyles.subtitle1.copyWith(
             fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         children: [
@@ -558,7 +572,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             child: Text(
               answer,
               style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 height: 1.5,
               ),
             ),
@@ -581,19 +595,22 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingS),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFB39DDB), Color(0xFF7B1FA2)],
+                gradient: LinearGradient(
+                  colors: [Theme.of(context).colorScheme.primary.withOpacity(0.3), Theme.of(context).colorScheme.secondary.withOpacity(0.3)],
                 ),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
-              child: const Icon(Icons.info, color: Colors.white, size: 20),
+              child: Icon(Icons.info, color: Theme.of(context).iconTheme.color, size: 20),
             ),
             const SizedBox(width: AppDimensions.paddingM),
-            const Text('About Nongki Yuk!'),
+            Text('About Nongki Yuk!', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
         content: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 350),
+          constraints: BoxConstraints(
+            maxWidth: 350,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -603,26 +620,29 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   'Find the Perfect Hangout on South Jakarta',
                   style: AppTextStyles.subtitle1.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingM),
                 Text(
                   'Version 1.0.0',
                   style: AppTextStyles.body2.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingS),
                 Text(
                   'Made with ❤️ for Jakarta hangout enthusiasts',
                   style: AppTextStyles.body2.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingM),
                 Text(
                   '© 2024 Nongki Yuk! All rights reserved.',
-                  style: AppTextStyles.caption,
+                  style: AppTextStyles.caption.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
                 ),
               ],
             ),
@@ -631,7 +651,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -678,7 +698,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
             child: const Text('Sign Out'),
           ),

@@ -14,7 +14,7 @@ class HomeFooter extends StatelessWidget {
       builder: (context, appState, child) {
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: Theme.of(context).scaffoldBackgroundColor,
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withOpacity(0.1),
@@ -24,9 +24,9 @@ class HomeFooter extends StatelessWidget {
             ],
           ),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.background,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: Colors.grey.shade500,
+            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+            selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+            unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
             type: BottomNavigationBarType.fixed,
             currentIndex: appState.currentBottomNavIndex,
             onTap: (index) {
@@ -59,8 +59,8 @@ class HomeFooter extends StatelessWidget {
                         top: -6,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: AppColors.accent,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.secondary,
                             shape: BoxShape.circle,
                           ),
                           constraints: const BoxConstraints(
@@ -71,8 +71,8 @@ class HomeFooter extends StatelessWidget {
                             appState.recentPlaces.length > 99
                                 ? '99+'
                                 : appState.recentPlaces.length.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -92,8 +92,8 @@ class HomeFooter extends StatelessWidget {
                         top: -6,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: AppColors.accent,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.secondary,
                             shape: BoxShape.circle,
                           ),
                           constraints: const BoxConstraints(
@@ -104,8 +104,8 @@ class HomeFooter extends StatelessWidget {
                             appState.recentPlaces.length > 99
                                 ? '99+'
                                 : appState.recentPlaces.length.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -128,7 +128,7 @@ class HomeFooter extends StatelessWidget {
                         top: -6,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
@@ -140,8 +140,8 @@ class HomeFooter extends StatelessWidget {
                             appState.favoritePlaces.length > 99
                                 ? '99+'
                                 : appState.favoritePlaces.length.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -161,7 +161,7 @@ class HomeFooter extends StatelessWidget {
                         top: -6,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
@@ -173,8 +173,8 @@ class HomeFooter extends StatelessWidget {
                             appState.favoritePlaces.length > 99
                                 ? '99+'
                                 : appState.favoritePlaces.length.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -243,8 +243,8 @@ class HomeFooter extends StatelessWidget {
         maxChildSize: 0.9,
         minChildSize: 0.3,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(AppDimensions.radiusXL),
             ),
@@ -270,17 +270,12 @@ class HomeFooter extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingS),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withOpacity(0.1),
-                            AppColors.primary.withOpacity(0.05),
-                          ],
-                        ),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.access_time,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 20,
                       ),
                     ),
@@ -298,13 +293,13 @@ class HomeFooter extends StatelessWidget {
                         vertical: AppDimensions.paddingXS,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
                       child: Text(
                         '${recentPlaces.length} places',
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.primary,
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -357,8 +352,8 @@ class HomeFooter extends StatelessWidget {
         maxChildSize: 0.9,
         minChildSize: 0.3,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(AppDimensions.radiusXL),
             ),
@@ -387,7 +382,7 @@ class HomeFooter extends StatelessWidget {
                         color: Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.favorite,
                         color: Colors.red,
                         size: 20,
@@ -519,7 +514,11 @@ class HomeFooter extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star, color: AppColors.accent, size: 16),
+                      Icon(
+                        Icons.star,
+                        color: Theme.of(context).colorScheme.secondary,
+                        size: 16,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         place.rating.toString(),
@@ -552,13 +551,17 @@ class HomeFooter extends StatelessWidget {
         content: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onPrimary,
+                size: 20,
+              ),
               const SizedBox(width: AppDimensions.paddingS),
             ],
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),

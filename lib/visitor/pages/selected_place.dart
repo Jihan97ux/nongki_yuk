@@ -31,60 +31,47 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
     final appState = Provider.of<AppState>(context);
     final reviews = appState.getReviews(currentPlace.id);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final imageHeight = constraints.maxHeight > 700
                 ? AppDimensions.cardImageHeight
-                : constraints.maxHeight * 0.45;
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Image Section with responsive height
-                  Stack(
+                : constraints.maxHeight * 0.35;
+            return Column(
+              children: [
+                // Top image with rounded corners and overlay card
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                  child: Stack(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                blurRadius: 16,
-                                spreadRadius: -5,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
-                            child: NetworkImageWithError(
-                              imageUrl: currentPlace!.imageUrl,
-                              width: double.infinity,
-                              height: imageHeight,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: NetworkImageWithError(
+                          imageUrl: currentPlace!.imageUrl,
+                          width: double.infinity,
+                          height: imageHeight,
+                          fit: BoxFit.cover,
                         ),
                       ),
+                      // Back button (top left)
                       Positioned(
-                        top: AppDimensions.paddingM,
-                        left: AppDimensions.paddingL + AppDimensions.paddingM,
+                        top: 12,
+                        left: 12,
                         child: _buildIconButton(
                           icon: Icons.arrow_back,
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
+                      // Bookmark button (top right)
                       Positioned(
-                        top: AppDimensions.paddingM,
-                        right: AppDimensions.paddingL + AppDimensions.paddingM,
+                        top: 12,
+                        right: 12,
                         child: Consumer<AppState>(
                           builder: (context, appState, child) {
                             final isFavorite = appState.isFavorite(currentPlace!.id);
                             return _buildIconButton(
-                              icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                              icon: isFavorite ? Icons.bookmark : Icons.bookmark_border,
                               onPressed: () {
                                 appState.toggleFavorite(currentPlace!.id);
                                 final message = isFavorite
@@ -96,74 +83,35 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           },
                         ),
                       ),
+                      // Overlay card (bottom)
                       Positioned(
                         bottom: 0,
-                        left: AppDimensions.paddingL + AppDimensions.paddingS,
-                        right: AppDimensions.paddingL + AppDimensions.paddingS,
+                        left: 0,
+                        right: 0,
                         child: Container(
-                          margin: const EdgeInsets.all(AppDimensions.paddingM),
-                          padding: const EdgeInsets.all(AppDimensions.paddingM),
+                          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.brown.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(18),
                           ),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      currentPlace.title,
-                                      style: AppTextStyles.heading4.copyWith(
-                                        color: AppColors.textWhite,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: AppDimensions.paddingS),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on,
-                                          color: AppColors.textWhite,
-                                          size: AppDimensions.iconS,
-                                        ),
-                                        const SizedBox(width: AppDimensions.paddingXS),
-                                        Expanded(
-                                          child: Text(
-                                            currentPlace.address,
-                                            style: AppTextStyles.body1.copyWith(
-                                              color: AppColors.textLight,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              Text(
+                                currentPlace.title,
+                                style: AppTextStyles.heading4.copyWith(
+                                  color: Colors.white,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    AppStrings.price,
-                                    style: AppTextStyles.body2.copyWith(
-                                      color: AppColors.textLight,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppDimensions.paddingS),
-                                  Text(
-                                    '\Rp.${currentPlace.price}',
-                                    style: AppTextStyles.heading4.copyWith(
-                                      color: AppColors.accent,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 2),
+                              Text(
+                                'Start from IDR ${currentPlace.price}',
+                                style: AppTextStyles.body2.copyWith(
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
                               ),
                             ],
                           ),
@@ -171,330 +119,140 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: AppDimensions.paddingL),
-
-                  // Tabs Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => setState(() => _tabIndex = 0),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Overview',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: _tabIndex == 0 ? AppColors.customPurpleLight : AppColors.customPurpleLight.withOpacity(0.5),
-                                  fontSize: 18,
-                                ),
-                              ),
-                              if (_tabIndex == 0)
-                                Container(
-                                  height: 2,
-                                  width: 80,
-                                  color: AppColors.customPurpleLight,
-                                  margin: const EdgeInsets.only(top: 4),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 24),
-                        GestureDetector(
-                          onTap: () => setState(() => _tabIndex = 1),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Review',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: _tabIndex == 1 ? AppColors.customPurpleLight : AppColors.customPurpleLight.withOpacity(0.5),
-                                  fontSize: 18,
-                                ),
-                              ),
-                              if (_tabIndex == 1)
-                                Container(
-                                  height: 2,
-                                  width: 80,
-                                  color: AppColors.customPurpleLight,
-                                  margin: const EdgeInsets.only(top: 4),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: AppDimensions.paddingM),
-
-                  // Info Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
-                      vertical: AppDimensions.paddingS,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: _InfoIcon(
-                            icon: Icons.access_time,
-                            label: currentPlace.operatingHours,
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.paddingS),
-                        Flexible(
-                          child: _InfoIcon(
-                            icon: Icons.local_offer,
-                            label: currentPlace.label,
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.paddingS),
-                        Flexible(
-                          child: _InfoIcon(
-                            icon: Icons.star,
-                            label: currentPlace.rating.toString(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: AppDimensions.paddingM),
-
-                  // Content Section
-                  if (_tabIndex == 0) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            currentPlace.description.isNotEmpty
-                                ? currentPlace.description
-                                : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.address}. '
-                                'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
-                            style: AppTextStyles.body1.copyWith(
-                              color: AppColors.textSecondary,
-                              height: 1.5,
-                            ),
-                          ),
-                          if (currentPlace.amenities.isNotEmpty) ...[
-                            const SizedBox(height: AppDimensions.paddingL),
+                ),
+                // Tabs (Overview/Review)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, left: 24, right: 24),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => _tabIndex = 0),
+                        child: Column(
+                          children: [
                             Text(
-                              'Amenities',
-                              style: AppTextStyles.subtitle1.copyWith(
+                              'Overview',
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: _tabIndex == 0
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                fontSize: 18,
                               ),
                             ),
-                            const SizedBox(height: AppDimensions.paddingS),
-                            Wrap(
-                              spacing: AppDimensions.paddingS,
-                              runSpacing: AppDimensions.paddingS,
-                              children: currentPlace.amenities.map((amenity) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingM,
-                                    vertical: AppDimensions.paddingS,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                                    border: Border.all(
-                                      color: AppColors.primary.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    amenity,
-                                    style: AppTextStyles.body2.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
+                            if (_tabIndex == 0)
+                              Container(
+                                height: 2,
+                                width: 80,
+                                color: Theme.of(context).colorScheme.primary,
+                                margin: const EdgeInsets.only(top: 4),
+                              ),
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                  if (_tabIndex == 1) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.yellow,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                            ),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/review', arguments: currentPlace);
-                            },
-                            icon: const Icon(Icons.rate_review),
-                            label: const Text('Tulis Review'),
-                          ),
-                          const SizedBox(height: 16),
-                          ...reviews.isEmpty
-                              ? [const Text('No reviews yet.')]
-                              : reviews.map((r) => ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null,
-                                      child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            r.userName,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Row(
-                                          children: List.generate(5, (i) => Icon(
-                                            i < r.rating ? Icons.star : Icons.star_border,
-                                            color: i < r.rating ? AppColors.customYellow : AppColors.customStarGrey,
-                                            size: 18,
-                                          )),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          r.rating.toStringAsFixed(1),
-                                          style: const TextStyle(
-                                            color: AppColors.customPurpleLight,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Text(
-                                      r.comment,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: AppColors.customTextGrey,
-                                      ),
-                                    ),
-                                    trailing: appState.currentUser?.id == r.userId
-                                        ? PopupMenuButton<String>(
-                                            icon: const Icon(Icons.more_vert),
-                                            onSelected: (value) {
-                                              if (value == 'edit') {
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  '/review',
-                                                  arguments: currentPlace,
-                                                ).then((_) {
-                                                  setState(() {});
-                                                });
-                                              } else if (value == 'delete') {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: const Text('Delete Review'),
-                                                    content: const Text('Are you sure you want to delete this review?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context),
-                                                        child: const Text('Cancel'),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          if (r.id.isNotEmpty && currentPlace != null) {
-                                                            appState.deleteReview(currentPlace.id, r.id);
-                                                            Navigator.pop(context);
-                                                            setState(() {});
-                                                          }
-                                                        },
-                                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              const PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.edit, size: 20),
-                                                    SizedBox(width: 8),
-                                                    Text('Edit'),
-                                                  ],
-                                                ),
-                                              ),
-                                              const PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.delete, size: 20, color: Colors.red),
-                                                    SizedBox(width: 8),
-                                                    Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  )).toList(),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: AppDimensions.paddingXL),
-
-                  // Go Button
-                  Padding(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    child: Consumer<AppState>(
-                      builder: (context, appState, child) {
-                        return SizedBox(
-                          width: double.infinity,
-                          height: AppDimensions.buttonHeightLarge,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accent,
-                              foregroundColor: AppColors.textPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => setState(() => _tabIndex = 1),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Review',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _tabIndex == 1
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                fontSize: 18,
                               ),
                             ),
-                            icon: const Icon(Icons.send),
-                            label: Text(
-                              AppStrings.go,
-                              style: AppTextStyles.button,
-                            ),
-                            onPressed: () {
-                              appState.addToRecentPlaces(currentPlace!);
-                              ErrorHandler.showSuccessSnackBar(
-                                context,
-                                '🎉 Have fun at ${currentPlace.title}!',
-                              );
-                              _showNavigationDialog(context, currentPlace);
-                            },
-                          ),
+                            if (_tabIndex == 1)
+                              Container(
+                                height: 2,
+                                width: 80,
+                                color: Theme.of(context).colorScheme.primary,
+                                margin: const EdgeInsets.only(top: 4),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Info Row (time, label, rating)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, left: 32, right: 32),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _InfoIcon(
+                        icon: Icons.access_time,
+                        label: currentPlace.operatingHours,
+                      ),
+                      const SizedBox(width: 16),
+                      _InfoIcon(
+                        icon: Icons.local_offer,
+                        label: currentPlace.label,
+                      ),
+                      const SizedBox(width: 16),
+                      _InfoIcon(
+                        icon: Icons.star,
+                        label: currentPlace.rating.toString(),
+                      ),
+                    ],
+                  ),
+                ),
+                // Address (greyed out)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, left: 32, right: 32),
+                  child: Text(
+                    currentPlace.address,
+                    style: TextStyle(
+                      color: Theme.of(context).disabledColor,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                // Spacer
+                const Spacer(),
+                // GO Button
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD54F),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      onPressed: () {
+                        appState.addToRecentPlaces(currentPlace!);
+                        ErrorHandler.showSuccessSnackBar(
+                          context,
+                          '🎉 Have fun at \\${currentPlace.title}!',
                         );
+                        _showNavigationDialog(context, currentPlace);
                       },
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('GO'),
+                          SizedBox(width: 8),
+                          Icon(Icons.send, size: 22),
+                        ],
+                      ),
                     ),
                   ),
-
-                  // Extra bottom padding for safe area
-                  SizedBox(height: MediaQuery.of(context).padding.bottom),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
@@ -505,10 +263,15 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
   // Error page widget
   Widget _buildErrorPage(BuildContext context, String errorMessage) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Error'),
-        backgroundColor: AppColors.primary,
+        title: Text(
+          'Error',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       body: Center(
@@ -548,8 +311,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                 icon: const Icon(Icons.home),
                 label: const Text('Back to Home'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
                 ),
               ),
             ],
@@ -565,7 +328,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-          backgroundColor: AppColors.customWhite,
+          backgroundColor: Theme.of(context).colorScheme.onPrimary,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -582,7 +345,10 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: AppColors.customPurpleDark)),
+                Text(
+                  'click and follow this map to go to your hangout spot today!',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -606,7 +372,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow,
-                          foregroundColor: Colors.black,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () {
@@ -624,8 +390,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.customPurpleDark,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? AppColors.customPurpleDark,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -648,13 +414,17 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
   }) {
     return ClipOval(
       child: Material(
-        color: Colors.black.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
         child: InkWell(
           onTap: onPressed,
           child: SizedBox(
             width: 36,
             height: 36,
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(
+              icon,
+              color: Theme.of(context).colorScheme.onPrimary,
+              size: 20,
+            ),
           ),
         ),
       ),

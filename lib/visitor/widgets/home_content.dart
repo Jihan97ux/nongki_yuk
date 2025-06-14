@@ -43,7 +43,9 @@ class _HomeContentState extends State<HomeContent> {
                 children: [
                   Text(
                     AppStrings.popularPlaces,
-                    style: AppTextStyles.heading4,
+                    style: AppTextStyles.heading4.copyWith(
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -52,7 +54,7 @@ class _HomeContentState extends State<HomeContent> {
                     child: Text(
                       AppStrings.viewAll,
                       style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -112,14 +114,20 @@ class _HomeContentState extends State<HomeContent> {
           vertical: AppDimensions.paddingS + 6,
         ),
         decoration: BoxDecoration(
-          color: selected ? AppColors.secondary : AppColors.surface,
+          color: selected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-          border: !selected ? Border.all(color: Colors.grey.shade300) : null,
+          border: !selected
+              ? Border.all(color: Theme.of(context).dividerColor)
+              : null,
         ),
         child: Text(
           label,
           style: AppTextStyles.subtitle1.copyWith(
-            color: selected ? AppColors.textWhite : AppColors.textSecondary,
+            color: selected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

@@ -40,17 +40,20 @@ class _ReviewPageState extends State<ReviewPage> {
     final currentUser = appState.currentUser;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.existingReview != null ? 'Edit Review' : 'Write Review',
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+          style: TextStyle(
+            color: Theme.of(context).appBarTheme.foregroundColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       resizeToAvoidBottomInset: true,
@@ -68,14 +71,29 @@ class _ReviewPageState extends State<ReviewPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(place.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text(place.address, style: const TextStyle(color: Colors.white70, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      place.title,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      place.address,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -112,7 +130,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.yellow,
-                    foregroundColor: Colors.black,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),

@@ -50,6 +50,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
