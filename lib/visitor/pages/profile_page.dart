@@ -14,7 +14,8 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -30,21 +31,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
 
     _animationController.forward();
   }
@@ -70,7 +66,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             children: [
               // Header Section with Gradient - Made taller to match design
               Container(
-                height: MediaQuery.of(context).size.height * 0.5, // Increased height
+                height:
+                    MediaQuery.of(context).size.height *
+                    0.5, // Increased height
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -96,7 +94,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         children: [
                           // Top Navigation Bar
                           Padding(
-                            padding: const EdgeInsets.all(AppDimensions.paddingL),
+                            padding: const EdgeInsets.all(
+                              AppDimensions.paddingL,
+                            ),
                             child: Row(
                               children: [
                                 IconButton(
@@ -116,7 +116,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                   ),
                                 ),
                                 const Spacer(),
-                                const SizedBox(width: 48), // Balance the back button
+                                const SizedBox(
+                                  width: 48,
+                                ), // Balance the back button
                               ],
                             ),
                           ),
@@ -150,18 +152,26 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                       child: CircleAvatar(
                                         radius: 76,
                                         backgroundImage: NetworkImage(
-                                          user.profileImageUrl ?? 'https://i.pravatar.cc/160',
+                                          user.profileImageUrl ??
+                                              'https://i.pravatar.cc/160',
                                         ),
-                                        onBackgroundImageError: (exception, stackTrace) {},
-                                        child: user.profileImageUrl == null
-                                            ? Text(
-                                          user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                                          style: AppTextStyles.heading1.copyWith(
-                                            color: AppColors.primary,
-                                            fontSize: 40,
-                                          ),
-                                        )
-                                            : null,
+                                        onBackgroundImageError:
+                                            (exception, stackTrace) {},
+                                        child:
+                                            user.profileImageUrl == null
+                                                ? Text(
+                                                  user.name.isNotEmpty
+                                                      ? user.name[0]
+                                                          .toUpperCase()
+                                                      : 'U',
+                                                  style: AppTextStyles.heading1
+                                                      .copyWith(
+                                                        color:
+                                                            AppColors.primary,
+                                                        fontSize: 40,
+                                                      ),
+                                                )
+                                                : null,
                                       ),
                                     ),
                                   ),
@@ -278,7 +288,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                             labelText: 'Current Password',
                             suffixIcon: const Icon(Icons.lock_outline),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusL,
+                              ),
                             ),
                           ),
                         ),
@@ -293,7 +305,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                             labelText: 'New Password',
                             suffixIcon: const Icon(Icons.lock_outline),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusL,
+                              ),
                             ),
                           ),
                         ),
@@ -306,40 +320,63 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           height: AppDimensions.buttonHeightLarge,
                           child: ElevatedButton(
                             onPressed: () async {
-                              final appState = Provider.of<AppState>(context, listen: false);
-                              final currentPassword = _currentPasswordController.text.trim();
-                              final newPassword = _newPasswordController.text.trim();
+                              final appState = Provider.of<AppState>(
+                                context,
+                                listen: false,
+                              );
+                              final currentPassword =
+                                  _currentPasswordController.text.trim();
+                              final newPassword =
+                                  _newPasswordController.text.trim();
 
-                              if (currentPassword.isEmpty || newPassword.isEmpty) {
-                                ErrorHandler.showErrorSnackBar(context, 'Please fill both passwords');
+                              if (currentPassword.isEmpty ||
+                                  newPassword.isEmpty) {
+                                ErrorHandler.showErrorSnackBar(
+                                  context,
+                                  'Please fill both passwords',
+                                );
                                 return;
                               }
 
                               try {
-                                final fbUser = fb_auth.FirebaseAuth.instance.currentUser;
+                                final fbUser =
+                                    fb_auth.FirebaseAuth.instance.currentUser;
                                 final email = fbUser?.email;
 
-                                final credential = fb_auth.EmailAuthProvider.credential(
+                                final credential = fb_auth
+                                    .EmailAuthProvider.credential(
                                   email: email!,
                                   password: currentPassword,
                                 );
 
-                                await fbUser?.reauthenticateWithCredential(credential);
-                                await appState.updateProfile(password: newPassword);
+                                await fbUser?.reauthenticateWithCredential(
+                                  credential,
+                                );
+                                await appState.updateProfile(
+                                  password: newPassword,
+                                );
 
                                 _currentPasswordController.clear();
                                 _newPasswordController.clear();
 
-                                ErrorHandler.showSuccessSnackBar(context, 'Password updated!');
+                                ErrorHandler.showSuccessSnackBar(
+                                  context,
+                                  'Password updated!',
+                                );
                               } catch (e) {
-                                ErrorHandler.showErrorSnackBar(context, 'Failed to update password');
+                                ErrorHandler.showErrorSnackBar(
+                                  context,
+                                  'Failed to update password',
+                                );
                               }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.accent,
                               foregroundColor: Colors.black,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusXL,
+                                ),
                               ),
                               elevation: 0,
                             ),
@@ -369,7 +406,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildInputField({
     required String value,
     required String hintText,
-    bool obscureText = false,
     bool readOnly = false,
     Widget? suffixIcon,
     VoidCallback? onTap,
@@ -384,10 +420,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         decoration: BoxDecoration(
           color: readOnly ? Colors.grey.shade100 : Colors.white,
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-          border: Border.all(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
         ),
         child: Row(
           children: [
@@ -395,11 +428,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               child: Text(
                 value.isEmpty ? hintText : value,
                 style: AppTextStyles.body1.copyWith(
-                  color: value.isEmpty
-                      ? Colors.grey.shade500
-                      : readOnly
-                      ? Colors.grey.shade600
-                      : Colors.black87,
+                  color:
+                      value.isEmpty
+                          ? Colors.grey.shade500
+                          : readOnly
+                          ? Colors.grey.shade600
+                          : Colors.black87,
                   fontSize: 16,
                 ),
               ),
@@ -421,78 +455,78 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusXL),
+      builder:
+          (context) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-          ),
-          padding: const EdgeInsets.all(AppDimensions.paddingXL),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radiusXL),
+                ),
+              ),
+              padding: const EdgeInsets.all(AppDimensions.paddingXL),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Edit Name',
-                    style: AppTextStyles.heading4,
+                  Row(
+                    children: [
+                      Text('Edit Name', style: AppTextStyles.heading4),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                  const SizedBox(height: AppDimensions.paddingL),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Full Name',
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusM,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.paddingXL),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await appState.updateProfile(
+                            name: nameController.text.trim(),
+                          );
+                          Navigator.pop(context);
+                          ErrorHandler.showSuccessSnackBar(
+                            context,
+                            'Name updated successfully!',
+                          );
+                        } catch (e) {
+                          ErrorHandler.showErrorSnackBar(
+                            context,
+                            'Failed to update name',
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.black,
+                      ),
+                      child: const Text('Save Changes'),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppDimensions.paddingL),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: const Icon(Icons.person),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingXL),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      await appState.updateProfile(
-                        name: nameController.text.trim(),
-                      );
-                      Navigator.pop(context);
-                      ErrorHandler.showSuccessSnackBar(
-                        context,
-                        'Name updated successfully!',
-                      );
-                    } catch (e) {
-                      ErrorHandler.showErrorSnackBar(
-                        context,
-                        'Failed to update name',
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text('Save Changes'),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -501,57 +535,71 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingXL),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Change Profile Picture',
-              style: AppTextStyles.heading4,
-            ),
-            const SizedBox(height: AppDimensions.paddingL),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingXL),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildImageOption(
-                  icon: Icons.camera_alt,
-                  label: 'Camera',
-                  onTap: () async {
-                    Navigator.pop(context);
-                    try {
-                      final url = await appState.uploadImageToCloudinary(ImageSource.camera);
-                      if (url != null) {
-                        await appState.updateProfile(profileImageUrl: url);
-                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
-                      }
-                    } catch (_) {
-                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
-                    }
-                  },
-                ),
-                _buildImageOption(
-                  icon: Icons.photo_library,
-                  label: 'Gallery',
-                  onTap: () async {
-                    Navigator.pop(context);
-                    try {
-                      final url = await appState.uploadImageToCloudinary(ImageSource.gallery);
-                      print(url);
-                      if (url != null) {
-                        await appState.updateProfile(profileImageUrl: url);
-                        ErrorHandler.showSuccessSnackBar(context, 'Image updated!');
-                      }
-                    } catch (_) {
-                      ErrorHandler.showErrorSnackBar(context, 'Failed to upload image.');
-                    }
-                  },
+                Text('Change Profile Picture', style: AppTextStyles.heading4),
+                const SizedBox(height: AppDimensions.paddingL),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildImageOption(
+                      icon: Icons.camera_alt,
+                      label: 'Camera',
+                      onTap: () async {
+                        Navigator.pop(context);
+                        try {
+                          final url = await appState.uploadImageToCloudinary(
+                            ImageSource.camera,
+                          );
+                          if (url != null) {
+                            await appState.updateProfile(profileImageUrl: url);
+                            ErrorHandler.showSuccessSnackBar(
+                              context,
+                              'Image updated!',
+                            );
+                          }
+                        } catch (_) {
+                          ErrorHandler.showErrorSnackBar(
+                            context,
+                            'Failed to upload image.',
+                          );
+                        }
+                      },
+                    ),
+                    _buildImageOption(
+                      icon: Icons.photo_library,
+                      label: 'Gallery',
+                      onTap: () async {
+                        Navigator.pop(context);
+                        try {
+                          final url = await appState.uploadImageToCloudinary(
+                            ImageSource.gallery,
+                          );
+                          print(url);
+                          if (url != null) {
+                            await appState.updateProfile(profileImageUrl: url);
+                            ErrorHandler.showSuccessSnackBar(
+                              context,
+                              'Image updated!',
+                            );
+                          }
+                        } catch (_) {
+                          ErrorHandler.showErrorSnackBar(
+                            context,
+                            'Failed to upload image.',
+                          );
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 

@@ -1,14 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math';
 
 class Location {
   final double lat;
   final double lng;
 
-  Location({
-    required this.lat,
-    required this.lng,
-  });
+  Location({required this.lat, required this.lng});
 
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
@@ -18,10 +14,7 @@ class Location {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'lat': lat,
-      'lng': lng,
-    };
+    return {'lat': lat, 'lng': lng};
   }
 
   @override
@@ -185,14 +178,17 @@ class Place {
     }
 
     String label = '';
-    if (json['popularTimesHistogram'] != null && json['popularTimesHistogram'] is Map<String, dynamic>) {
-      final popularTimes = Map<String, dynamic>.from(json['popularTimesHistogram']);
+    if (json['popularTimesHistogram'] != null &&
+        json['popularTimesHistogram'] is Map<String, dynamic>) {
+      final popularTimes = Map<String, dynamic>.from(
+        json['popularTimesHistogram'],
+      );
       final dayAbbr = today.substring(0, 2);
       final todayData = popularTimes[dayAbbr];
       if (todayData is List) {
         final nowHour = DateTime.now().hour;
         final match = todayData.firstWhere(
-              (entry) => entry['hour'] == nowHour,
+          (entry) => entry['hour'] == nowHour,
           orElse: () => null,
         );
         if (match != null && match['occupancyPercent'] != null) {

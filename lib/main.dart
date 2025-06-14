@@ -28,12 +28,10 @@ import 'visitor/theme/app_theme.dart';
 import 'visitor/utils/error_handler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -51,33 +49,47 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
 
-            home: appState.authStatus == AuthStatus.authenticated
-                ? const HomePage()
-                : const LandingPage(),
+            home:
+                appState.authStatus == AuthStatus.authenticated
+                    ? const HomePage()
+                    : const LandingPage(),
 
             // Fixed routing configuration
             routes: {
               AppRoutes.landing: (context) => const LandingPage(),
               AppRoutes.login: (context) => const LoginPage(),
               AppRoutes.signup: (context) => const SignUpPage(),
-              AppRoutes.home: (context) => _buildAuthGuard(const HomePage(), appState),
-              AppRoutes.profile: (context) => _buildAuthGuard(const ProfilePage(), appState), // Updated
-              AppRoutes.recentPlaces: (context) => _buildAuthGuard(const RecentPlacesPage(), appState),
-              AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState),
-              AppRoutes.favorites: (context) => _buildAuthGuard(const FavoritePlacesPage(), appState),
-              AppRoutes.review: (context) => _buildAuthGuard(const ReviewPage(), appState),
+              AppRoutes.home:
+                  (context) => _buildAuthGuard(const HomePage(), appState),
+              AppRoutes.profile:
+                  (context) =>
+                      _buildAuthGuard(const ProfilePage(), appState), // Updated
+              AppRoutes.recentPlaces:
+                  (context) =>
+                      _buildAuthGuard(const RecentPlacesPage(), appState),
+              AppRoutes.settings:
+                  (context) => _buildAuthGuard(const SettingsPage(), appState),
+              AppRoutes.favorites:
+                  (context) =>
+                      _buildAuthGuard(const FavoritePlacesPage(), appState),
+              AppRoutes.review:
+                  (context) => _buildAuthGuard(const ReviewPage(), appState),
             },
 
             // Route generator for dynamic routes (with arguments)
             onGenerateRoute: (RouteSettings settings) {
               print('DEBUG Main: Generating route for: ${settings.name}');
               print('DEBUG Main: Arguments: ${settings.arguments}');
-              print('DEBUG Main: Arguments type: ${settings.arguments.runtimeType}');
+              print(
+                'DEBUG Main: Arguments type: ${settings.arguments.runtimeType}',
+              );
 
               switch (settings.name) {
                 case AppRoutes.selectedPlace:
                   final arguments = settings.arguments;
-                  print('DEBUG Main: SelectedPlace route - Arguments: $arguments');
+                  print(
+                    'DEBUG Main: SelectedPlace route - Arguments: $arguments',
+                  );
 
                   if (arguments == null || arguments is! Place) {
                     print('DEBUG Main: Invalid arguments, redirecting to home');
@@ -87,7 +99,9 @@ class MyApp extends StatelessWidget {
                     );
                   }
 
-                  print('DEBUG Main: Valid Place arguments, creating SelectedPlacePage');
+                  print(
+                    'DEBUG Main: Valid Place arguments, creating SelectedPlacePage',
+                  );
                   return MaterialPageRoute(
                     builder: (context) => const SelectedPlacePage(),
                     settings: settings, // Pass settings with arguments
@@ -201,18 +215,20 @@ class NotFoundPage extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       final appState = Provider.of<AppState>(
-                          context, listen: false);
+                        context,
+                        listen: false,
+                      );
                       if (appState.authStatus == AuthStatus.authenticated) {
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           AppRoutes.home,
-                              (route) => false,
+                          (route) => false,
                         );
                       } else {
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           AppRoutes.landing,
-                              (route) => false,
+                          (route) => false,
                         );
                       }
                     },
@@ -221,7 +237,8 @@ class NotFoundPage extends StatelessWidget {
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusL),
+                          AppDimensions.radiusL,
+                        ),
                       ),
                       elevation: 2,
                     ),

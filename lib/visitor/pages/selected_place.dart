@@ -18,26 +18,18 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
   @override
   Widget build(BuildContext context) {
     Place? currentPlace = widget.place;
-    if (currentPlace == null) {
-      final route = ModalRoute.of(context);
-      final arguments = route?.settings.arguments;
-      if (arguments != null && arguments is Place) {
-        currentPlace = arguments;
-      }
-    }
-    if (currentPlace == null) {
-      return _buildErrorPage(context, 'Place data not found');
-    }
     final appState = Provider.of<AppState>(context);
-    final reviews = appState.getReviews(currentPlace.id);
+    final reviews =
+        currentPlace != null ? appState.getReviews(currentPlace.id) : [];
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final imageHeight = constraints.maxHeight > 700
-                ? AppDimensions.cardImageHeight
-                : constraints.maxHeight * 0.45;
+            final imageHeight =
+                constraints.maxHeight > 700
+                    ? AppDimensions.cardImageHeight
+                    : constraints.maxHeight * 0.45;
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -45,10 +37,14 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   Stack(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.paddingL,
+                        ),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXXL,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -59,7 +55,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXXL,
+                            ),
                             child: NetworkImageWithError(
                               imageUrl: currentPlace!.imageUrl,
                               width: double.infinity,
@@ -82,15 +80,24 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         right: AppDimensions.paddingL + AppDimensions.paddingM,
                         child: Consumer<AppState>(
                           builder: (context, appState, child) {
-                            final isFavorite = appState.isFavorite(currentPlace!.id);
+                            final isFavorite = appState.isFavorite(
+                              currentPlace!.id,
+                            );
                             return _buildIconButton(
-                              icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                              icon:
+                                  isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
                               onPressed: () {
                                 appState.toggleFavorite(currentPlace!.id);
-                                final message = isFavorite
-                                    ? 'Removed from favorites'
-                                    : 'Added to favorites';
-                                ErrorHandler.showSuccessSnackBar(context, message);
+                                final message =
+                                    isFavorite
+                                        ? 'Removed from favorites'
+                                        : 'Added to favorites';
+                                ErrorHandler.showSuccessSnackBar(
+                                  context,
+                                  message,
+                                );
                               },
                             );
                           },
@@ -104,7 +111,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           margin: const EdgeInsets.all(AppDimensions.paddingM),
                           padding: const EdgeInsets.all(AppDimensions.paddingM),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusL,
+                            ),
                             color: Colors.black.withOpacity(0.4),
                           ),
                           child: Row(
@@ -122,7 +131,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: AppDimensions.paddingS),
+                                    const SizedBox(
+                                      height: AppDimensions.paddingS,
+                                    ),
                                     Row(
                                       children: [
                                         const Icon(
@@ -130,7 +141,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                           color: AppColors.textWhite,
                                           size: AppDimensions.iconS,
                                         ),
-                                        const SizedBox(width: AppDimensions.paddingXS),
+                                        const SizedBox(
+                                          width: AppDimensions.paddingXS,
+                                        ),
                                         Expanded(
                                           child: Text(
                                             currentPlace.address,
@@ -155,7 +168,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                       color: AppColors.textLight,
                                     ),
                                   ),
-                                  const SizedBox(height: AppDimensions.paddingS),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingS,
+                                  ),
                                   Text(
                                     '\Rp.${currentPlace.price}',
                                     style: AppTextStyles.heading4.copyWith(
@@ -176,15 +191,34 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
 
                   // Tabs Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         GestureDetector(
                           onTap: () => setState(() => _tabIndex = 0),
                           child: Column(
                             children: [
-                              Text('Overview', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 0 ? Colors.black : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 0) Container(height: 2, width: 80, color: Colors.black, margin: const EdgeInsets.only(top: 4)),
+                              Text(
+                                'Overview',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      _tabIndex == 0
+                                          ? Colors.black
+                                          : Colors.purple.shade200,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              if (_tabIndex == 0)
+                                Container(
+                                  height: 2,
+                                  width: 80,
+                                  color: Colors.black,
+                                  margin: const EdgeInsets.only(top: 4),
+                                ),
                             ],
                           ),
                         ),
@@ -193,8 +227,24 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           onTap: () => setState(() => _tabIndex = 1),
                           child: Column(
                             children: [
-                              Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Colors.purple : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 1) Container(height: 2, width: 80, color: Colors.purple, margin: const EdgeInsets.only(top: 4)),
+                              Text(
+                                'Review',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      _tabIndex == 1
+                                          ? Colors.purple
+                                          : Colors.purple.shade200,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              if (_tabIndex == 1)
+                                Container(
+                                  height: 2,
+                                  width: 80,
+                                  color: Colors.purple,
+                                  margin: const EdgeInsets.only(top: 4),
+                                ),
                             ],
                           ),
                         ),
@@ -242,7 +292,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   // Content Section
                   if (_tabIndex == 0) ...[
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingL,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -250,7 +302,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                             currentPlace.description.isNotEmpty
                                 ? currentPlace.description
                                 : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.address}. '
-                                'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
+                                    'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
                             style: AppTextStyles.body1.copyWith(
                               color: AppColors.textSecondary,
                               height: 1.5,
@@ -268,28 +320,35 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                             Wrap(
                               spacing: AppDimensions.paddingS,
                               runSpacing: AppDimensions.paddingS,
-                              children: currentPlace.amenities.map((amenity) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingM,
-                                    vertical: AppDimensions.paddingS,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                                    border: Border.all(
-                                      color: AppColors.primary.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    amenity,
-                                    style: AppTextStyles.body2.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
+                              children:
+                                  currentPlace.amenities.map((amenity) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppDimensions.paddingM,
+                                        vertical: AppDimensions.paddingS,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(
+                                          0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          AppDimensions.radiusM,
+                                        ),
+                                        border: Border.all(
+                                          color: AppColors.primary.withOpacity(
+                                            0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        amenity,
+                                        style: AppTextStyles.body2.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                             ),
                           ],
                         ],
@@ -298,7 +357,10 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   ],
                   if (_tabIndex == 1) ...[
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -306,10 +368,16 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.yellow,
                               foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
                             onPressed: () {
-                              Navigator.pushNamed(context, '/review', arguments: currentPlace);
+                              Navigator.pushNamed(
+                                context,
+                                '/review',
+                                arguments: currentPlace,
+                              );
                             },
                             icon: const Icon(Icons.rate_review),
                             label: const Text('Tulis Review'),
@@ -317,102 +385,174 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           const SizedBox(height: 16),
                           ...reviews.isEmpty
                               ? [const Text('No reviews yet.')]
-                              : reviews.map((r) => ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null,
-                                      child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            r.userName,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                              : reviews
+                                  .map(
+                                    (r) => ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage:
+                                            r.userAvatarUrl.isNotEmpty
+                                                ? NetworkImage(r.userAvatarUrl)
+                                                : null,
+                                        child:
+                                            r.userAvatarUrl.isEmpty
+                                                ? const Icon(Icons.person)
+                                                : null,
+                                      ),
+                                      title: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              r.userName,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Row(
+                                            children: List.generate(
+                                              5,
+                                              (i) => Icon(
+                                                i < r.rating
+                                                    ? Icons.star
+                                                    : Icons.star_border,
+                                                color: Colors.amber,
+                                                size: 18,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            r.rating.toStringAsFixed(1),
+                                            style: const TextStyle(
+                                              color: Colors.purple,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Row(
-                                          children: List.generate(5, (i) => Icon(i < r.rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 18)),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          r.rating.toStringAsFixed(1),
-                                          style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Text(
-                                      r.comment,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    trailing: appState.currentUser?.id == r.userId
-                                        ? PopupMenuButton<String>(
-                                            icon: const Icon(Icons.more_vert),
-                                            onSelected: (value) {
-                                              if (value == 'edit') {
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  '/review',
-                                                  arguments: currentPlace,
-                                                ).then((_) {
-                                                  setState(() {});
-                                                });
-                                              } else if (value == 'delete') {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: const Text('Delete Review'),
-                                                    content: const Text('Are you sure you want to delete this review?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context),
-                                                        child: const Text('Cancel'),
+                                        ],
+                                      ),
+                                      subtitle: Text(
+                                        r.comment,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      trailing:
+                                          appState.currentUser?.id == r.userId
+                                              ? PopupMenuButton<String>(
+                                                icon: const Icon(
+                                                  Icons.more_vert,
+                                                ),
+                                                onSelected: (value) {
+                                                  if (value == 'edit') {
+                                                    Navigator.pushNamed(
+                                                      context,
+                                                      '/review',
+                                                      arguments: currentPlace,
+                                                    ).then((_) {
+                                                      setState(() {});
+                                                    });
+                                                  } else if (value ==
+                                                      'delete') {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder:
+                                                          (
+                                                            context,
+                                                          ) => AlertDialog(
+                                                            title: const Text(
+                                                              'Delete Review',
+                                                            ),
+                                                            content: const Text(
+                                                              'Are you sure you want to delete this review?',
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed:
+                                                                    () => Navigator.pop(
+                                                                      context,
+                                                                    ),
+                                                                child:
+                                                                    const Text(
+                                                                      'Cancel',
+                                                                    ),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  if (r.id.isNotEmpty &&
+                                                                      currentPlace !=
+                                                                          null) {
+                                                                    appState.deleteReview(
+                                                                      currentPlace
+                                                                          .id,
+                                                                      r.id,
+                                                                    );
+                                                                    Navigator.pop(
+                                                                      context,
+                                                                    );
+                                                                    setState(
+                                                                      () {},
+                                                                    );
+                                                                  }
+                                                                },
+                                                                child: const Text(
+                                                                  'Delete',
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        Colors
+                                                                            .red,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  }
+                                                },
+                                                itemBuilder:
+                                                    (context) => [
+                                                      const PopupMenuItem(
+                                                        value: 'edit',
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.edit,
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text('Edit'),
+                                                          ],
+                                                        ),
                                                       ),
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          if (r.id.isNotEmpty && currentPlace != null) {
-                                                            appState.deleteReview(currentPlace.id, r.id);
-                                                            Navigator.pop(context);
-                                                            setState(() {});
-                                                          }
-                                                        },
-                                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                      const PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.delete,
+                                                              size: 20,
+                                                              color: Colors.red,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text(
+                                                              'Delete',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              const PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.edit, size: 20),
-                                                    SizedBox(width: 8),
-                                                    Text('Edit'),
-                                                  ],
-                                                ),
-                                              ),
-                                              const PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.delete, size: 20, color: Colors.red),
-                                                    SizedBox(width: 8),
-                                                    Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  )).toList(),
+                                              )
+                                              : null,
+                                    ),
+                                  )
+                                  .toList(),
                         ],
                       ),
                     ),
@@ -433,7 +573,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                               backgroundColor: AppColors.accent,
                               foregroundColor: AppColors.textPrimary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusL,
+                                ),
                               ),
                             ),
                             icon: const Icon(Icons.send),
@@ -481,11 +623,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 80,
-                color: AppColors.error,
-              ),
+              Icon(Icons.error_outline, size: 80, color: AppColors.error),
               const SizedBox(height: AppDimensions.paddingL),
               Text(
                 'Oops! Something went wrong',
@@ -506,7 +644,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     AppRoutes.home,
-                        (route) => false,
+                    (route) => false,
                   );
                 },
                 icon: const Icon(Icons.home),
@@ -528,7 +666,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
+          ),
           backgroundColor: Colors.purple.shade50,
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -541,26 +681,52 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     const Icon(Icons.navigation, color: Colors.purple),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('Navigate to ${place.title}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        'Navigate to ${place.title}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: Colors.purple.shade700)),
+                Text(
+                  'click and follow this map to go to your hangout spot today!',
+                  style: TextStyle(color: Colors.purple.shade700),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Colors.purple, size: 18),
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.purple,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(place.address, style: const TextStyle(fontWeight: FontWeight.bold))),
+                    Expanded(
+                      child: Text(
+                        place.address,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.directions_walk, color: Colors.purple, size: 18),
+                    const Icon(
+                      Icons.directions_walk,
+                      color: Colors.purple,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
-                    Text(place.distance, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      place.distance,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -571,13 +737,18 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow,
                           foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
                           // TODO: Open Google Maps
                         },
-                        child: const Text('Open Maps', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Open Maps',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -590,7 +761,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('Cancel'),
@@ -699,11 +872,7 @@ class NetworkImageWithError extends StatelessWidget {
           height: height,
           color: Colors.grey[300],
           child: const Center(
-            child: Icon(
-              Icons.broken_image,
-              color: Colors.grey,
-              size: 50,
-            ),
+            child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
           ),
         );
       },
@@ -713,9 +882,7 @@ class NetworkImageWithError extends StatelessWidget {
           width: width,
           height: height,
           color: Colors.grey[200],
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: CircularProgressIndicator()),
         );
       },
     );
