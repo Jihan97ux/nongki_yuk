@@ -44,7 +44,7 @@ class _SignUpPageState extends State<SignUpPage> with TickerProviderStateMixin {
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
     ));
 
     _slideAnimation = Tween<Offset>(

@@ -246,7 +246,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           'Your Information',
                           style: AppTextStyles.heading4.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
 
@@ -267,7 +267,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'Current Password',
-                            suffixIcon: const Icon(Icons.lock_outline),
+                            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                            suffixIcon: Icon(Icons.lock_outline, color: Theme.of(context).colorScheme.onSurface),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                             ),
@@ -282,7 +283,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'New Password',
-                            suffixIcon: const Icon(Icons.lock_outline),
+                            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                            suffixIcon: Icon(Icons.lock_outline, color: Theme.of(context).colorScheme.onSurface),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                             ),
@@ -373,10 +375,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           vertical: AppDimensions.paddingL,
         ),
         decoration: BoxDecoration(
-          color: readOnly ? Colors.grey.shade100 : Colors.white,
+          color: readOnly ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           border: Border.all(
-            color: Colors.grey.shade300,
+            color: Theme.of(context).colorScheme.outline,
             width: 1,
           ),
         ),
@@ -387,10 +389,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 value.isEmpty ? hintText : value,
                 style: AppTextStyles.body1.copyWith(
                   color: value.isEmpty
-                      ? Colors.grey.shade500
+                      ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
                       : readOnly
-                      ? Colors.grey.shade600
-                      : Colors.black87,
+                      ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7)
+                      : Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
                 ),
               ),

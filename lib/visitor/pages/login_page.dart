@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
     ));
 
     _slideAnimation = Tween<Offset>(

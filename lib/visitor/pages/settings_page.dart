@@ -104,11 +104,15 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       ),
 
                       // Dark Mode
-                      _buildSettingItem(
-                        icon: Icons.dark_mode_outlined,
-                        title: 'Dark Mode',
-                        onTap: () {
-                          context.read<AppState>().toggleTheme();
+                      Consumer<AppState>(
+                        builder: (context, appState, child) {
+                          return _buildSettingItem(
+                            icon: appState.isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                            title: appState.isDarkMode ? 'Light Mode' : 'Dark Mode',
+                            onTap: () {
+                              appState.toggleTheme();
+                            },
+                          );
                         },
                       ),
 

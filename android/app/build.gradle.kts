@@ -32,6 +32,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Enable R8 full mode
+        proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
     buildTypes {
@@ -39,10 +42,47 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            
+            // Enable R8
+            isMinifyEnabled = true
+            isShrinkResources = true
+            
+            // Enable split APKs
+            splits {
+                abi {
+                    isEnable = true
+                    reset()
+                    include("armeabi-v7a", "arm64-v8a", "x86_64")
+                    isUniversalApk = true
+                }
+            }
         }
+        
+        debug {
+            // Disable R8 for debug builds
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+    }
+
+    // Enable build cache
+    buildFeatures {
+        buildConfig = true
+    }
+
+    // Enable parallel execution
+    dexOptions {
+        javaMaxHeapSize = "4g"
+        preDexLibraries = true
+        maxProcessCount = 8
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Add performance monitoring
+    implementation("com.google.firebase:firebase-perf-ktx:20.5.2")
 }

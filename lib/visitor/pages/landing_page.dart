@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
 
 class LandingPage extends StatefulWidget {
+
   const LandingPage({super.key});
 
   @override
@@ -27,7 +28,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
     ));
 
     _slideAnimation = Tween<Offset>(

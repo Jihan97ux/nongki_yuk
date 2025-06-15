@@ -32,7 +32,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
     final appState = Provider.of<AppState>(context);
     final reviews = appState.getReviews(currentPlace.id);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -184,8 +184,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           onTap: () => setState(() => _tabIndex = 0),
                           child: Column(
                             children: [
-                              Text('Overview', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 0 ? Colors.black : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 0) Container(height: 2, width: 80, color: Colors.black, margin: const EdgeInsets.only(top: 4)),
+                              Text('Overview', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 0 ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.primary.withOpacity(0.7), fontSize: 18)),
+                              if (_tabIndex == 0) Container(height: 2, width: 80, color: Theme.of(context).colorScheme.onSurface, margin: const EdgeInsets.only(top: 4)),
                             ],
                           ),
                         ),
@@ -194,8 +194,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           onTap: () => setState(() => _tabIndex = 1),
                           child: Column(
                             children: [
-                              Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Colors.purple : Colors.purple.shade200, fontSize: 18)),
-                              if (_tabIndex == 1) Container(height: 2, width: 80, color: Colors.purple, margin: const EdgeInsets.only(top: 4)),
+                              Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.primary.withOpacity(0.7), fontSize: 18)),
+                              if (_tabIndex == 1) Container(height: 2, width: 80, color: Theme.of(context).colorScheme.primary, margin: const EdgeInsets.only(top: 4)),
                             ],
                           ),
                         ),
@@ -253,7 +253,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                 : '${currentPlace.title} adalah tempat nongkrong yang nyaman di ${currentPlace.address}. '
                                 'Cocok untuk kamu yang ingin suasana ${currentPlace.label.toLowerCase()} dengan rating ${currentPlace.rating} dan jarak sekitar ${currentPlace.distance}.',
                             style: AppTextStyles.body1.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).colorScheme.onSurface,
                               height: 1.5,
                             ),
                           ),
@@ -263,6 +263,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                               'Amenities',
                               style: AppTextStyles.subtitle1.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.paddingS),
@@ -276,16 +277,16 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                     vertical: AppDimensions.paddingS,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                                     border: Border.all(
-                                      color: AppColors.primary.withOpacity(0.3),
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                                     ),
                                   ),
                                   child: Text(
                                     amenity,
                                     style: AppTextStyles.body2.copyWith(
-                                      color: AppColors.primary,
+                                      color: Theme.of(context).colorScheme.primary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -305,8 +306,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         children: [
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.yellow,
-                              foregroundColor: Colors.black,
+                              backgroundColor: Theme.of(context).colorScheme.secondary,
+                              foregroundColor: Theme.of(context).colorScheme.onSecondary,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             ),
                             onPressed: () {
@@ -525,8 +526,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-          backgroundColor: Colors.purple.shade50,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -535,29 +536,54 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.navigation, color: Colors.purple),
+                    Icon(Icons.navigation, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('Navigate to ${place.title}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        'Navigate to ${place.title}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.onSurface
+                        ),
+                        overflow: TextOverflow.ellipsis
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: Colors.purple.shade700)),
+                Text(
+                  'click and follow this map to go to your hangout spot today!',
+                  style: TextStyle(color: Theme.of(context).colorScheme.primary.withOpacity(0.7))
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Colors.purple, size: 18),
+                    Icon(Icons.location_on, color: Theme.of(context).colorScheme.primary, size: 18),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(place.address, style: const TextStyle(fontWeight: FontWeight.bold))),
+                    Expanded(
+                      child: Text(
+                        place.address,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface
+                        )
+                      )
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.directions_walk, color: Colors.purple, size: 18),
+                    Icon(Icons.directions_walk, color: Theme.of(context).colorScheme.primary, size: 18),
                     const SizedBox(width: 8),
-                    Text(place.distance, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      place.distance,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface
+                      )
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -566,8 +592,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
-                          foregroundColor: Colors.black,
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () async {
@@ -586,8 +612,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                               'Could not open directions to ${place.title}',
                             );
                           }
-                          },
-                        child: const Text('Open Maps', style: TextStyle(fontWeight: FontWeight.bold)),
+                        },
+                        child: const Text('Open in Maps'),
                       ),
                     ),
                   ],
@@ -598,8 +624,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -622,13 +648,13 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
   }) {
     return ClipOval(
       child: Material(
-        color: Colors.black.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.3),
         child: InkWell(
           onTap: onPressed,
           child: SizedBox(
             width: 36,
             height: 36,
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 20),
           ),
         ),
       ),
@@ -650,11 +676,11 @@ class _InfoIcon extends StatelessWidget {
         vertical: AppDimensions.paddingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -663,13 +689,13 @@ class _InfoIcon extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: AppDimensions.iconS),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: AppDimensions.iconS),
           const SizedBox(width: AppDimensions.paddingXS),
           Flexible(
             child: Text(
               label,
               style: AppTextStyles.body2.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
