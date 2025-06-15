@@ -19,6 +19,7 @@ class _ReviewPageState extends State<ReviewPage> {
   late final String _reviewId;
   late final String _userId;
   List<String> _footageUrls = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -36,28 +37,174 @@ class _ReviewPageState extends State<ReviewPage> {
     super.dispose();
   }
 
-  Future<void> _pickMultipleFootage(AppState appState) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.media,
+  void _showMediaSourceDialog(AppState appState, {bool isReplace = false}) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                isReplace ? 'Replace Footage' : 'Add Footage',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildMediaOption(
+                    icon: Icons.camera_alt,
+                    label: 'Camera',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickFromCamera(appState, isReplace);
+                    },
+                  ),
+                  _buildMediaOption(
+                    icon: Icons.photo_library,
+                    label: 'Gallery',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickMultipleFootage(appState, isReplace);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
+  }
 
-    if (result != null && result.files.isNotEmpty) {
-      List<XFile> xFiles = result.files
-          .where((file) => file.path != null)
-          .map((file) => XFile(file.path!))
-          .toList();
+  Widget _buildMediaOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(
+              icon,
+              size: 30,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      if (xFiles.isNotEmpty) {
-        final urls = await appState.uploadMultipleFootage(xFiles);
-        setState(() {
-          _footageUrls.addAll(urls);
-        });
+  Future<void> _pickFromCamera(AppState appState, bool isReplace) async {
+    try {
+      // Show dialog to choose between photo or video
+      final result = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Choose Media Type'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Take Photo'),
+                  onTap: () => Navigator.pop(context, 'photo'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.videocam),
+                  title: const Text('Record Video'),
+                  onTap: () => Navigator.pop(context, 'video'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (result != null) {
+        XFile? pickedFile;
+        if (result == 'photo') {
+          pickedFile = await _picker.pickImage(source: ImageSource.camera);
+        } else {
+          pickedFile = await _picker.pickVideo(source: ImageSource.camera);
+        }
+
+        if (pickedFile != null) {
+          final urls = await appState.uploadMultipleFootage([pickedFile]);
+          setState(() {
+            if (isReplace) {
+              _footageUrls = urls;
+            } else {
+              _footageUrls.addAll(urls);
+            }
+          });
+        }
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking from camera: $e')),
+      );
     }
   }
 
-  void _replaceFootage(AppState appState) async {
+  Future<void> _pickFromGallery(AppState appState, bool isReplace) async {
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultipleMedia();
+
+      if (pickedFiles.isNotEmpty) {
+        final urls = await appState.uploadMultipleFootage(pickedFiles);
+        setState(() {
+          if (isReplace) {
+            _footageUrls = urls;
+          } else {
+            _footageUrls.addAll(urls);
+          }
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking from gallery: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickMultipleFootage(AppState appState, bool isReplace) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.media,
@@ -72,7 +219,11 @@ class _ReviewPageState extends State<ReviewPage> {
       if (xFiles.isNotEmpty) {
         final urls = await appState.uploadMultipleFootage(xFiles);
         setState(() {
-          _footageUrls = urls;
+          if (isReplace) {
+            _footageUrls = urls;
+          } else {
+            _footageUrls.addAll(urls);
+          }
         });
       }
     }
@@ -234,15 +385,15 @@ class _ReviewPageState extends State<ReviewPage> {
             const SizedBox(height: 16),
             if (_footageUrls.isEmpty)
               ElevatedButton.icon(
-                onPressed: () => _pickMultipleFootage(appState),
+                onPressed: () => _showMediaSourceDialog(appState),
                 icon: const Icon(Icons.upload),
                 label: const Text('Upload Footage'),
               )
             else if (widget.existingReview != null)
               TextButton.icon(
-                onPressed: () => _replaceFootage(appState),
+                onPressed: () => _showMediaSourceDialog(appState, isReplace: true),
                 icon: const Icon(Icons.refresh),
-                label: const Text('Upload Footage'),
+                label: const Text('Replace Footage'),
               ),
             const SizedBox(height: 16),
             if (_footageUrls.isNotEmpty) _buildMediaGrid(),

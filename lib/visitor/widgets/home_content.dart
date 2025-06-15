@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nongki_yuk/app_export.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
@@ -16,7 +17,6 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    // Load places when the widget is first created
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AppState>(context, listen: false).loadPlaces();
     });
@@ -26,25 +26,27 @@ class _HomeContentState extends State<HomeContent> {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
-        // Show search results if user is searching
-        if (appState.searchQuery.isNotEmpty) {
+        if (appState.searchQuery.isNotEmpty ||
+            appState.isAdvancedSearchActive) {
           return _buildSearchResults(appState);
         }
 
-        // Show main content
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with Popular places and View all
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     AppStrings.popularPlaces,
                     style: AppTextStyles.heading4.copyWith(
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .onBackground,
                     ),
                   ),
                   GestureDetector(
@@ -54,7 +56,11 @@ class _HomeContentState extends State<HomeContent> {
                     child: Text(
                       AppStrings.viewAll,
                       style: AppTextStyles.body1.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme
+                            .of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -64,7 +70,6 @@ class _HomeContentState extends State<HomeContent> {
 
             const SizedBox(height: AppDimensions.paddingM),
 
-            // Filter Tabs
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingM,
@@ -115,19 +120,32 @@ class _HomeContentState extends State<HomeContent> {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).cardColor,
+              ? Theme
+              .of(context)
+              .colorScheme
+              .primary
+              : Theme
+              .of(context)
+              .cardColor,
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
           border: !selected
-              ? Border.all(color: Theme.of(context).dividerColor)
+              ? Border.all(color: Theme
+              .of(context)
+              .dividerColor)
               : null,
         ),
         child: Text(
           label,
           style: AppTextStyles.subtitle1.copyWith(
             color: selected
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.onSurface,
+                ? Theme
+                .of(context)
+                .colorScheme
+                .onPrimary
+                : Theme
+                .of(context)
+                .colorScheme
+                .onSurface,
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -151,28 +169,45 @@ class _HomeContentState extends State<HomeContent> {
       );
     }
 
-    if (appState.filteredPlaces.isEmpty) {
-      return const Expanded(
+    List<Place> placesToShow;
+
+    if (appState.searchQuery.isNotEmpty || appState.isAdvancedSearchActive) {
+      placesToShow = appState.searchResults;
+    } else {
+      placesToShow = appState.filteredPlaces;
+    }
+
+    if (placesToShow.isEmpty) {
+      String message = 'No places found';
+      if (appState.searchQuery.isNotEmpty) {
+        message = 'No places found for "${appState.searchQuery}"';
+      } else if (appState.isAdvancedSearchActive) {
+        message = 'No places match your filters';
+      }
+
+      return Expanded(
         child: EmptyStateWidget(
-          message: 'No places found',
+          message: message,
           icon: Icons.location_off,
         ),
       );
     }
 
-    return ContentCard(
-      places: appState.searchResults.isNotEmpty
-          ? appState.searchResults
-          : appState.filteredPlaces,
-    );
-
+    return ContentCard(places: placesToShow);
   }
 
   Widget _buildSearchResults(AppState appState) {
     if (appState.searchResults.isEmpty) {
+      String message = 'No places found';
+      if (appState.searchQuery.isNotEmpty) {
+        message = 'No places found for "${appState.searchQuery}"';
+      } else if (appState.isAdvancedSearchActive) {
+        message = 'No places match your filters';
+      }
+
       return Expanded(
         child: EmptyStateWidget(
-          message: 'No places found for "${appState.searchQuery}"',
+          message: message,
           icon: Icons.search_off,
         ),
       );
@@ -182,13 +217,19 @@ class _HomeContentState extends State<HomeContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-          child: Text(
-            'Search Results (${appState.searchResults.length})',
-            style: AppTextStyles.heading4,
+          padding: const EdgeInsets.symmetric(horizontal: AppDimensions
+              .paddingL),
+          child: Row(
+            children: [
+              Text(
+                appState.searchQuery.isNotEmpty
+                    ? 'Search Results (${appState.searchResults.length})'
+                    : 'Filtered Results (${appState.searchResults.length})',
+                style: AppTextStyles.heading4,
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: AppDimensions.paddingM),
         ContentCard(places: appState.searchResults),
       ],
     );

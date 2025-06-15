@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../pages/review_page.dart';
 import '../models/place_model.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 class SelectedPlacePage extends StatefulWidget {
   final Place? place;
@@ -1212,25 +1214,104 @@ class MediaViewerDialog extends StatefulWidget {
 class _MediaViewerDialogState extends State<MediaViewerDialog> {
   late PageController _pageController;
   late int _currentIndex;
+  Map<int, VideoPlayerController?> _videoControllers = {};
+  Map<int, ChewieController?> _chewieControllers = {};
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+
+    // Initialize video for current page if it's a video
+    _initializeVideoForIndex(_currentIndex);
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _disposeAllControllers();
     super.dispose();
   }
 
+  void _disposeAllControllers() {
+    for (var controller in _videoControllers.values) {
+      controller?.dispose();
+    }
+    for (var controller in _chewieControllers.values) {
+      controller?.dispose();
+    }
+    _videoControllers.clear();
+    _chewieControllers.clear();
+  }
+
   bool _isVideo(String url) {
-    return url.toLowerCase().contains('.mp4') ||
-        url.toLowerCase().contains('.mov') ||
-        url.toLowerCase().contains('.avi') ||
-        url.toLowerCase().contains('video');
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.webm'];
+    final lowerUrl = url.toLowerCase();
+
+    for (String ext in videoExtensions) {
+      if (lowerUrl.contains(ext)) return true;
+    }
+
+    return url.contains('cloudinary.com') && url.contains('video/');
+  }
+
+  Future<void> _initializeVideoForIndex(int index) async {
+    final mediaUrl = widget.mediaList[index];
+    if (!_isVideo(mediaUrl)) return;
+
+    try {
+      // Dispose previous controller for this index if exists
+      _videoControllers[index]?.dispose();
+      _chewieControllers[index]?.dispose();
+
+      final videoController = VideoPlayerController.networkUrl(Uri.parse(mediaUrl));
+      await videoController.initialize();
+
+      if (mounted) {
+        final chewieController = ChewieController(
+          videoPlayerController: videoController,
+          autoPlay: false,
+          looping: false,
+          showControls: true,
+          allowFullScreen: true,
+          allowMuting: true,
+          showControlsOnInitialize: true,
+          materialProgressColors: ChewieProgressColors(
+            playedColor: Theme.of(context).colorScheme.primary,
+            handleColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: Colors.grey,
+            bufferedColor: Colors.grey.withOpacity(0.5),
+          ),
+        );
+
+        setState(() {
+          _videoControllers[index] = videoController;
+          _chewieControllers[index] = chewieController;
+        });
+      }
+    } catch (e) {
+      print('Error initializing video: $e');
+      // Video akan menampilkan error widget
+    }
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // Pause all videos
+    for (var controller in _videoControllers.values) {
+      if (controller?.value.isPlaying == true) {
+        controller?.pause();
+      }
+    }
+
+    // Initialize video for new page if needed
+    if (_isVideo(widget.mediaList[index]) && !_videoControllers.containsKey(index)) {
+      _initializeVideoForIndex(index);
+    }
   }
 
   @override
@@ -1243,11 +1324,7 @@ class _MediaViewerDialogState extends State<MediaViewerDialog> {
           PageView.builder(
             controller: _pageController,
             itemCount: widget.mediaList.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+            onPageChanged: _onPageChanged,
             itemBuilder: (context, index) {
               final mediaUrl = widget.mediaList[index];
               final isVideo = _isVideo(mediaUrl);
@@ -1258,78 +1335,7 @@ class _MediaViewerDialogState extends State<MediaViewerDialog> {
                     maxHeight: MediaQuery.of(context).size.height * 0.8,
                     maxWidth: MediaQuery.of(context).size.width * 0.9,
                   ),
-                  child: isVideo ?
-                  // Video player placeholder - bisa diganti dengan video player widget
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.play_circle_filled,
-                            color: Colors.white,
-                            size: 64,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Tap to play video',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ) :
-                  // Image viewer
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      mediaUrl,
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          height: 200,
-                          color: Colors.black26,
-                          child: const Center(
-                            child: CircularProgressIndicator(color: Colors.white),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[800],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.broken_image,
-                                  color: Colors.white,
-                                  size: 48,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Failed to load image',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  child: isVideo ? _buildVideoPlayer(index, mediaUrl) : _buildImageViewer(mediaUrl),
                 ),
               );
             },
@@ -1372,18 +1378,15 @@ class _MediaViewerDialogState extends State<MediaViewerDialog> {
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: index == _currentIndex
-                          ? Colors.white
-                          : Colors.white54,
+                      color: index == _currentIndex ? Colors.white : Colors.white54,
                     ),
                   ),
                 ),
               ),
             ),
 
-          // Navigation arrows (untuk desktop/tablet)
+          // Navigation arrows
           if (widget.mediaList.length > 1) ...[
-            // Previous button
             if (_currentIndex > 0)
               Positioned(
                 left: 16,
@@ -1413,7 +1416,6 @@ class _MediaViewerDialogState extends State<MediaViewerDialog> {
                 ),
               ),
 
-            // Next button
             if (_currentIndex < widget.mediaList.length - 1)
               Positioned(
                 right: 16,
@@ -1444,6 +1446,107 @@ class _MediaViewerDialogState extends State<MediaViewerDialog> {
               ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildVideoPlayer(int index, String videoUrl) {
+    final chewieController = _chewieControllers[index];
+    final videoController = _videoControllers[index];
+
+    if (chewieController != null && videoController != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: videoController.value.aspectRatio,
+          child: Chewie(controller: chewieController),
+        ),
+      );
+    } else if (videoController != null && !videoController.value.isInitialized) {
+      // Video is loading
+      return Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 16),
+              Text(
+                'Loading video...',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildImageViewer(String imageUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            height: 200,
+            color: Colors.black26,
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.broken_image,
+                    color: Colors.white,
+                    size: 48,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Failed to load image',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

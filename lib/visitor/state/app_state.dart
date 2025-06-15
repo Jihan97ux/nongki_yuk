@@ -299,6 +299,9 @@ class AppState extends ChangeNotifier {
   void setFilter(PlaceFilter filter) {
     _selectedFilter = filter;
     _filterPlaces();
+    if (_searchQuery.isNotEmpty || _searchFilters.hasActiveFilters) {
+      searchPlaces(_searchQuery);
+    }
     notifyListeners();
   }
 
@@ -327,7 +330,7 @@ class AppState extends ChangeNotifier {
     List<Place> results;
 
     if (query.isEmpty) {
-      results = List<Place>.from(_places);
+      results = List<Place>.from(_filteredPlaces);
     } else {
       results = _places.where((place) {
         final lowerQuery = query.toLowerCase();
@@ -337,6 +340,7 @@ class AppState extends ChangeNotifier {
       }).toList();
     }
 
+    // Apply advanced filters jika ada
     if (_searchFilters.hasActiveFilters) {
       results = _applyAdvancedFilters(results);
       _isAdvancedSearchActive = true;
@@ -344,10 +348,26 @@ class AppState extends ChangeNotifier {
       _isAdvancedSearchActive = false;
     }
 
+    results = _applyBasicFilter(results);
+
     _searchResults = results;
     notifyListeners();
   }
 
+  List<Place> _applyBasicFilter(List<Place> places) {
+    switch (_selectedFilter) {
+      case PlaceFilter.mostViewed:
+        return List<Place>.from(places)..sort((a, b) => b.rating.compareTo(a.rating));
+      case PlaceFilter.nearby:
+        return List<Place>.from(places)..sort((a, b) {
+          double distanceA = double.tryParse(a.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          double distanceB = double.tryParse(b.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          return distanceA.compareTo(distanceB);
+        });
+      case PlaceFilter.latest:
+        return places.reversed.toList();
+    }
+  }
 
   List<Place> _applyAdvancedFilters(List<Place> places) {
     return places.where((place) {
@@ -407,6 +427,7 @@ class AppState extends ChangeNotifier {
     _searchQuery = '';
     _searchResults = [];
     _isAdvancedSearchActive = false;
+    _searchFilters = SearchFilters();
     notifyListeners();
   }
 
