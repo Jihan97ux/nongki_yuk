@@ -38,6 +38,7 @@ class Review {
   final double rating;
   final String comment;
   final DateTime createdAt;
+  final List<String> footage;
 
   Review({
     required this.id,
@@ -47,6 +48,7 @@ class Review {
     required this.rating,
     required this.comment,
     required this.createdAt,
+    this.footage = const [],
   });
 
   Review copyWith({
@@ -57,6 +59,8 @@ class Review {
     double? rating,
     String? comment,
     DateTime? createdAt,
+    List<String>? footage,
+
   }) {
     return Review(
       id: id ?? this.id,
@@ -66,8 +70,36 @@ class Review {
       rating: rating ?? this.rating,
       comment: comment ?? this.comment,
       createdAt: createdAt ?? this.createdAt,
+      footage: footage ?? this.footage,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'userName': userName,
+      'userAvatarUrl': userAvatarUrl,
+      'rating': rating,
+      'comment': comment,
+      'createdAt': createdAt.toIso8601String(),
+      'footage': footage,
+    };
+  }
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json['id'],
+      userId: json['userId'],
+      userName: json['userName'],
+      userAvatarUrl: json['userAvatarUrl'],
+      rating: (json['rating'] as num).toDouble(),
+      comment: json['comment'],
+      createdAt: DateTime.parse(json['createdAt']),
+      footage: List<String>.from(json['footage'] ?? []),
+    );
+  }
+
 }
 
 class Place {

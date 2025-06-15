@@ -5,6 +5,9 @@ import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../pages/review_page.dart';
+import '../models/place_model.dart';
 
 class SelectedPlacePage extends StatefulWidget {
   final Place? place;
@@ -15,6 +18,111 @@ class SelectedPlacePage extends StatefulWidget {
 
 class _SelectedPlacePageState extends State<SelectedPlacePage> {
   int _tabIndex = 0;
+
+  List<Review> _reviews = [];
+  bool _loadingReviews = true;
+  bool _reviewsLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _onReviewTabTapped() {
+    setState(() => _tabIndex = 1);
+    if (!_reviewsLoaded) {
+      _loadReviews();
+    }
+  }
+
+  Future<void> _loadReviews() async {
+    if (!mounted) return;
+
+    setState(() {
+      _loadingReviews = true;
+    });
+
+    Place? place = widget.place;
+    if (place == null) {
+      final route = ModalRoute.of(context);
+      final arguments = route?.settings.arguments;
+      if (arguments != null && arguments is Place) {
+        place = arguments;
+      }
+    }
+
+    if (place?.id == null) {
+      if (mounted) {
+        setState(() {
+          _reviews = [];
+          _loadingReviews = false;
+          _reviewsLoaded = true;
+        });
+      }
+      return;
+    }
+
+    try {
+      // Tambahkan timeout dan limit untuk optimasi
+      final snapshot = await FirebaseFirestore.instance
+          .collection('places')
+          .doc(place!.id)
+          .collection('reviews')
+          .orderBy('createdAt', descending: true)
+          .limit(20) // Limit hanya 20 review pertama
+          .get()
+          .timeout(const Duration(seconds: 10)); // Timeout 10 detik
+
+      if (mounted) {
+        setState(() {
+          _reviews = snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return Review.fromJson(data);
+          }).toList();
+          _loadingReviews = false;
+          _reviewsLoaded = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _reviews = [];
+          _loadingReviews = false;
+          _reviewsLoaded = true;
+        });
+
+        // Show error message
+        ErrorHandler.showErrorSnackBar(
+            context,
+            'Failed to load reviews. Please check your connection.'
+        );
+        print('Error loading reviews: $e');
+      }
+    }
+  }
+
+  Future<void> _navigateToReviewPage(BuildContext context, Place place, {Review? existingReview}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReviewPage(existingReview: existingReview),
+        settings: RouteSettings(arguments: place),
+      ),
+    );
+
+    // If review was submitted/updated, reload reviews
+    if (result == true && _tabIndex == 1) {
+      _loadReviews();
+    }
+  }
+
+  void _forceReloadReviews() {
+    _reviewsLoaded = false;
+    if (_tabIndex == 1) {
+      _loadReviews();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +299,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                         ),
                         const SizedBox(width: 24),
                         GestureDetector(
-                          onTap: () => setState(() => _tabIndex = 1),
+                          onTap: _onReviewTabTapped,
                           child: Column(
                             children: [
                               Text('Review', style: TextStyle(fontWeight: FontWeight.bold, color: _tabIndex == 1 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.primary.withOpacity(0.7), fontSize: 18)),
@@ -310,111 +418,357 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                               foregroundColor: Theme.of(context).colorScheme.onSecondary,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             ),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/review', arguments: currentPlace);
+                            onPressed: () async {
+                              final appState = Provider.of<AppState>(context, listen: false);
+                              final currentUser = appState.currentUser;
+                              if (currentUser == null) return;
+
+                              final reviewDoc = await FirebaseFirestore.instance
+                                  .collection('places')
+                                  .doc(currentPlace!.id)
+                                  .collection('reviews')
+                                  .where('userId', isEqualTo: currentUser.id)
+                                  .limit(1)
+                                  .get();
+
+                              Review? existingReview;
+                              if (reviewDoc.docs.isNotEmpty) {
+                                final data = reviewDoc.docs.first.data();
+                                existingReview = Review.fromJson(data);
+                              }
+
+                              await _navigateToReviewPage(context, currentPlace!, existingReview: existingReview);
                             },
                             icon: const Icon(Icons.rate_review),
                             label: const Text('Tulis Review'),
                           ),
                           const SizedBox(height: 16),
-                          ...reviews.isEmpty
-                              ? [const Text('No reviews yet.')]
-                              : reviews.map((r) => ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundImage: r.userAvatarUrl.isNotEmpty ? NetworkImage(r.userAvatarUrl) : null,
-                                      child: r.userAvatarUrl.isEmpty ? const Icon(Icons.person) : null
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            r.userName,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Row(
-                                          children: List.generate(5, (i) => Icon(i < r.rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 18)),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          r.rating.toStringAsFixed(1),
-                                          style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+
+                          // Optimasi loading state
+                          if (_loadingReviews) ...[
+                            Container(
+                              height: 200,
+                              child: const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 16),
+                                    Text('Loading reviews...', style: TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            // Reviews content
+                            if (_reviews.isEmpty) ...[
+                              Container(
+                                height: 150,
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.rate_review, size: 48, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'No reviews yet',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Be the first to review!',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ] else ...[
+                              // Header info
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: Text(
+                                  '${_reviews.length} Reviews',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _reviews.length,
+                                itemBuilder: (context, index) {
+                                  final review = _reviews[index];
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
                                         ),
                                       ],
                                     ),
-                                    subtitle: Text(
-                                      r.comment,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    trailing: appState.currentUser?.id == r.userId
-                                        ? PopupMenuButton<String>(
-                                            icon: const Icon(Icons.more_vert),
-                                            onSelected: (value) {
-                                              if (value == 'edit') {
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  '/review',
-                                                  arguments: currentPlace,
-                                                ).then((_) {
-                                                  setState(() {});
-                                                });
-                                              } else if (value == 'delete') {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: const Text('Delete Review'),
-                                                    content: const Text('Are you sure you want to delete this review?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context),
-                                                        child: const Text('Cancel'),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          if (r.id.isNotEmpty && currentPlace != null) {
-                                                            appState.deleteReview(currentPlace.id, r.id);
-                                                            Navigator.pop(context);
-                                                            setState(() {});
-                                                          }
-                                                        },
-                                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // User info row
+                                        Row(
+                                          children: [
+                                            // Optimasi avatar loading
+                                            CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: Colors.grey[300],
+                                              child: review.userAvatarUrl.isNotEmpty
+                                                  ? ClipOval(
+                                                child: Image.network(
+                                                  review.userAvatarUrl,
+                                                  width: 40,
+                                                  height: 40,
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder: (context, child, loadingProgress) {
+                                                    if (loadingProgress == null) return child;
+                                                    return const SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                                    );
+                                                  },
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return const Icon(Icons.person, size: 20);
+                                                  },
+                                                ),
+                                              )
+                                                  : const Icon(Icons.person, size: 20),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    review.userName,
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Row(
+                                                    children: [
+                                                      ...List.generate(5, (i) => Icon(
+                                                        i < review.rating ? Icons.star : Icons.star_border,
+                                                        color: Colors.amber,
+                                                        size: 16,
+                                                      )),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                        review.rating.toStringAsFixed(1),
+                                                        style: const TextStyle(
+                                                          color: Colors.purple,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
+                                                ],
+                                              ),
+                                            ),
+                                            // Menu untuk user sendiri
+                                            Consumer<AppState>(
+                                              builder: (context, appState, child) {
+                                                if (appState.currentUser?.id == review.userId) {
+                                                  return PopupMenuButton<String>(
+                                                    icon: const Icon(Icons.more_vert),
+                                                    onSelected: (value) async {
+                                                      if (value == 'edit') {
+                                                        await Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) => ReviewPage(existingReview: review),
+                                                            settings: RouteSettings(arguments: currentPlace),
+                                                          ),
+                                                        );
+                                                        _reviewsLoaded = false;
+                                                        _loadReviews();
+                                                      } else if (value == 'delete') {
+                                                        _showDeleteDialog(context, review, currentPlace!);
+                                                      }
+                                                    },
+                                                    itemBuilder: (context) => [
+                                                      const PopupMenuItem(
+                                                        value: 'edit',
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(Icons.edit, size: 20),
+                                                            SizedBox(width: 8),
+                                                            Text('Edit'),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(Icons.delete, size: 20, color: Colors.red),
+                                                            SizedBox(width: 8),
+                                                            Text('Delete', style: TextStyle(color: Colors.red)),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+                                                return const SizedBox.shrink();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // Review text
+                                        Text(
+                                          review.comment,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            height: 1.4,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        if (review.footage.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          SizedBox(
+                                            height: 120,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: review.footage.length,
+                                              itemBuilder: (context, mediaIndex) {
+                                                final mediaUrl = review.footage[mediaIndex];
+                                                final isVideo = _isVideoUrl(mediaUrl);
+
+                                                return Container(
+                                                  margin: const EdgeInsets.only(right: 8),
+                                                  child: GestureDetector(
+                                                    onTap: () => _showMediaDialog(context, review.footage, mediaIndex),
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      child: Container(
+                                                        width: 100,
+                                                        height: 100,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.grey[300],
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                        child: Stack(
+                                                          fit: StackFit.expand,
+                                                          children: [
+                                                            // Background image/thumbnail
+                                                            Image.network(
+                                                              isVideo ? _getCloudinaryThumbnail(mediaUrl) : mediaUrl,
+                                                              fit: BoxFit.cover,
+                                                              loadingBuilder: (context, child, loadingProgress) {
+                                                                if (loadingProgress == null) return child;
+                                                                return Center(
+                                                                  child: SizedBox(
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    child: CircularProgressIndicator(
+                                                                      strokeWidth: 2,
+                                                                      value: loadingProgress.expectedTotalBytes != null
+                                                                          ? loadingProgress.cumulativeBytesLoaded /
+                                                                          loadingProgress.expectedTotalBytes!
+                                                                          : null,
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              },
+                                                              errorBuilder: (context, error, stackTrace) {
+                                                                return Container(
+                                                                  color: Colors.grey[300],
+                                                                  child: Icon(
+                                                                    isVideo ? Icons.video_library : Icons.broken_image,
+                                                                    color: Colors.grey[600],
+                                                                    size: 24,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+
+                                                            if (isVideo) ...[
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                  color: Colors.black.withOpacity(0.3),
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                              ),
+                                                              // Play button
+                                                              Center(
+                                                                child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                    color: Colors.black54,
+                                                                    borderRadius: BorderRadius.circular(15),
+                                                                  ),
+                                                                  child: const Icon(
+                                                                    Icons.play_arrow,
+                                                                    color: Colors.white,
+                                                                    size: 20,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+
+                                                            Positioned(
+                                                              bottom: 4,
+                                                              right: 4,
+                                                              child: Container(
+                                                                padding: const EdgeInsets.all(2),
+                                                                decoration: BoxDecoration(
+                                                                  color: Colors.black54,
+                                                                  borderRadius: BorderRadius.circular(3),
+                                                                ),
+                                                                child: Icon(
+                                                                  isVideo ? Icons.videocam : Icons.image,
+                                                                  color: Colors.white,
+                                                                  size: 10,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 );
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              const PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.edit, size: 20),
-                                                    SizedBox(width: 8),
-                                                    Text('Edit'),
-                                                  ],
-                                                ),
-                                              ),
-                                              const PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.delete, size: 20, color: Colors.red),
-                                                    SizedBox(width: 8),
-                                                    Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  )).toList(),
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                        const SizedBox(height: 8),
+                                        // Date
+                                        Text(
+                                          _formatDate(review.createdAt),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ],
                         ],
                       ),
                     ),
@@ -526,8 +880,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Theme.of(context).dialogBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -540,36 +894,19 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Navigate to ${place.title}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Theme.of(context).colorScheme.onSurface
-                        ),
-                        overflow: TextOverflow.ellipsis
-                      ),
+                          'Navigate to ${place.title}',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.onSurface), overflow: TextOverflow.ellipsis),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  'click and follow this map to go to your hangout spot today!',
-                  style: TextStyle(color: Theme.of(context).colorScheme.primary.withOpacity(0.7))
-                ),
+                Text('click and follow this map to go to your hangout spot today!', style: TextStyle(color: Theme.of(context).colorScheme.primary.withOpacity(0.7))),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Icon(Icons.location_on, color: Theme.of(context).colorScheme.primary, size: 18),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        place.address,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface
-                        )
-                      )
-                    ),
+                    Expanded(child: Text(place.address, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface))),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -577,13 +914,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                   children: [
                     Icon(Icons.directions_walk, color: Theme.of(context).colorScheme.primary, size: 18),
                     const SizedBox(width: 8),
-                    Text(
-                      place.distance,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface
-                      )
-                    ),
+                    Text(place.distance, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -592,8 +923,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.secondary,
-                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () async {
@@ -624,8 +955,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -640,6 +971,112 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
         );
       },
     );
+  }
+
+  bool _isVideoUrl(String url) {
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.webm'];
+    final lowerUrl = url.toLowerCase();
+
+    for (String ext in videoExtensions) {
+      if (lowerUrl.contains(ext)) return true;
+    }
+
+    return url.contains('cloudinary.com') && url.contains('video/');
+  }
+
+  String _getCloudinaryThumbnail(String videoUrl) {
+    if (videoUrl.contains('cloudinary.com')) {
+      return videoUrl.replaceAll(
+          '/video/upload/',
+          '/video/upload/so_0,h_120,w_100,c_fill,f_jpg/'
+      );
+    }
+    return videoUrl;
+  }
+
+  void _showDeleteDialog(BuildContext context, Review review, Place place) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Review'),
+        content: const Text('Are you sure you want to delete this review?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              setState(() {
+                _reviews.removeWhere((r) => r.userId == review.userId);
+              });
+
+              try {
+                // Delete dari Firestore di background
+                await FirebaseFirestore.instance
+                    .collection('places')
+                    .doc(place.id)
+                    .collection('reviews')
+                    .where('userId', isEqualTo: review.userId)
+                    .get()
+                    .then((snapshot) async {
+                  for (var doc in snapshot.docs) {
+                    await doc.reference.delete();
+                  }
+                });
+
+                if (mounted) {
+                  ErrorHandler.showSuccessSnackBar(context, 'Review deleted successfully');
+                }
+              } catch (e) {
+                // Jika gagal, restore review ke UI dan reload
+                if (mounted) {
+                  _reviewsLoaded = false;
+                  _loadReviews();
+                  ErrorHandler.showErrorSnackBar(context, 'Failed to delete review');
+                }
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMediaDialog(BuildContext context, List<String> mediaList, int initialIndex) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: MediaViewerDialog(
+          mediaList: mediaList,
+          initialIndex: initialIndex,
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        return '${difference.inMinutes} minutes ago';
+      }
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
   }
 
   Widget _buildIconButton({
@@ -754,6 +1191,260 @@ class NetworkImageWithError extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class MediaViewerDialog extends StatefulWidget {
+  final List<String> mediaList;
+  final int initialIndex;
+
+  const MediaViewerDialog({
+    Key? key,
+    required this.mediaList,
+    required this.initialIndex,
+  }) : super(key: key);
+
+  @override
+  State<MediaViewerDialog> createState() => _MediaViewerDialogState();
+}
+
+class _MediaViewerDialogState extends State<MediaViewerDialog> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  bool _isVideo(String url) {
+    return url.toLowerCase().contains('.mp4') ||
+        url.toLowerCase().contains('.mov') ||
+        url.toLowerCase().contains('.avi') ||
+        url.toLowerCase().contains('video');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Media content
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.mediaList.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final mediaUrl = widget.mediaList[index];
+              final isVideo = _isVideo(mediaUrl);
+
+              return Center(
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                    maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  ),
+                  child: isVideo ?
+                  // Video player placeholder - bisa diganti dengan video player widget
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.play_circle_filled,
+                            color: Colors.white,
+                            size: 64,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Tap to play video',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ) :
+                  // Image viewer
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      mediaUrl,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 200,
+                          color: Colors.black26,
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Colors.white),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Failed to load image',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Close button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 16,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+
+          // Page indicator
+          if (widget.mediaList.length > 1)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 32,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.mediaList.length,
+                      (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: index == _currentIndex
+                          ? Colors.white
+                          : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Navigation arrows (untuk desktop/tablet)
+          if (widget.mediaList.length > 1) ...[
+            // Previous button
+            if (_currentIndex > 0)
+              Positioned(
+                left: 16,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // Next button
+            if (_currentIndex < widget.mediaList.length - 1)
+              Positioned(
+                right: 16,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ],
+      ),
     );
   }
 }

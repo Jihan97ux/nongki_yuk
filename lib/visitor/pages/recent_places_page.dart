@@ -5,6 +5,9 @@ import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 import '../widgets/home_footer.dart';
 import '../models/place_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../pages/review_page.dart';
+import '../models/place_model.dart';
 
 class RecentPlacesPage extends StatelessWidget {
 
@@ -74,12 +77,33 @@ class RecentPlacesPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(
+                        onPressed: () async {
+                          final appState = Provider.of<AppState>(context, listen: false);
+                          final currentUser = appState.currentUser;
+                          if (currentUser == null) return;
+
+                          final reviewDoc = await FirebaseFirestore.instance
+                              .collection('places')
+                              .doc(place.id)
+                              .collection('reviews')
+                              .where('userId', isEqualTo: currentUser.id)
+                              .limit(1)
+                              .get();
+
+                          Review? existingReview;
+                          if (reviewDoc.docs.isNotEmpty) {
+                            final data = reviewDoc.docs.first.data();
+                            existingReview = Review.fromJson(data);
+                          }
+
+                          Navigator.push(
                             context,
-                            '/review',
-                            arguments: place,
+                            MaterialPageRoute(
+                              builder: (_) => ReviewPage(
+                                existingReview: existingReview,
+                              ),
+                              settings: RouteSettings(arguments: place),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(

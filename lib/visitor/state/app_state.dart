@@ -558,9 +558,40 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<String>> uploadMultipleFootage(List<XFile> files) async {
+    List<String> uploadedUrls = [];
+
+    for (var file in files) {
+      final uri = Uri.parse('https://api.cloudinary.com/v1_1/djj9ofual/upload');
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = 'NongkiYuk'
+        ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      final response = await request.send();
+      final resStr = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final data = json.decode(resStr);
+        uploadedUrls.add(data['secure_url']);
+      }
+    }
+
+    return uploadedUrls;
+  }
+
+  Future<void> saveReviewToFirestore(String placeId, Review review) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('places')
+        .doc(placeId)
+        .collection('reviews')
+        .doc(review.id);
+
+    await docRef.set(review.toJson());
+  }
+
   void updateReview(String placeId, Review updatedReview) {
     if (_reviews[placeId] == null) return;
-    
+
     final index = _reviews[placeId]!.indexWhere((review) => review.id == updatedReview.id);
     if (index != -1) {
       _reviews[placeId]![index] = updatedReview;
@@ -570,7 +601,7 @@ class AppState extends ChangeNotifier {
 
   void deleteReview(String placeId, String reviewId) {
     if (_reviews[placeId] == null) return;
-    
+
     _reviews[placeId]!.removeWhere((review) => review.id == reviewId);
     notifyListeners();
   }

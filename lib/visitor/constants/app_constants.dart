@@ -166,7 +166,7 @@ class AppStrings {
   static const String searchPlaces = 'Search places';
   static const String popularPlaces = 'Popular places';
   static const String viewAll = 'View all';
-  static const String mostViewed = 'Most Viewed';
+  static const String mostViewed = 'Recommended';
   static const String nearby = 'Nearby';
   static const String latest = 'Latest';
 
