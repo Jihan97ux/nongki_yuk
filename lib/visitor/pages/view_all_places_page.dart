@@ -15,10 +15,17 @@ class ViewAllPlacesPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Popular Places'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        iconTheme: Theme.of(context).appBarTheme.iconTheme,
+        title: Text(
+          'Popular Places',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onBackground,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Padding(
@@ -161,11 +168,15 @@ class _PlaceGridCard extends StatelessWidget {
                         children: [
                           const Icon(Icons.star, color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
-                          Text(
-                            place.rating.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              place.rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
