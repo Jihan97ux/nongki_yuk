@@ -75,7 +75,7 @@ class _FilterModalState extends State<FilterModal> {
     if (newFilters.hasActiveFilters) {
       ErrorHandler.showSuccessSnackBar(
         context,
-        'Advanced filters applied! 🎯',
+        'Filter applied!',
       );
     }
   }

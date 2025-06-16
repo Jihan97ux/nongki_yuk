@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 enum AuthStatus { authenticated, unauthenticated, loading }
 enum PlaceFilter { mostViewed, nearby, latest }
@@ -149,6 +150,10 @@ class AppState extends ChangeNotifier {
   // Advanced Search Getters
   SearchFilters get searchFilters => _searchFilters;
   bool get isAdvancedSearchActive => _isAdvancedSearchActive;
+  void setAdvancedSearchActive(bool value) {
+    _isAdvancedSearchActive = value;
+    notifyListeners();
+  }
 
   // Recent Places Getters
   List<RecentPlace> get recentPlaces => _recentPlaces;
@@ -163,6 +168,27 @@ class AppState extends ChangeNotifier {
 
   // Theme Getters
   bool get isDarkMode => _isDarkMode;
+
+  String? _watchedLabel;
+  String? _watchedPlaceId;
+  bool _labelNotified = false;
+  String? get watchedLabel => _watchedLabel;
+
+
+  Future<void> trackLabelChange(String placeId, String label) async{
+    _watchedPlaceId = placeId;
+    _watchedLabel = label;
+    _labelNotified = false;
+
+    print('[DEBUG] Tracking label "$_watchedLabel" for place $_watchedPlaceId');
+
+    final updatedPlace = await PlaceService.getPlaceById(placeId);
+    if (updatedPlace != null) {
+      await checkLabelChangeAndNotify(updatedPlace);
+    }
+  }
+
+  List<Place> get popularPlaces => _places.where((place) => place.rating >= 4.0).toList()..sort((a, b) => b.rating.compareTo(a.rating));
 
   // Authentication methods
   Future<void> signIn(String email, String password) async {
@@ -340,7 +366,6 @@ class AppState extends ChangeNotifier {
       }).toList();
     }
 
-    // Apply advanced filters jika ada
     if (_searchFilters.hasActiveFilters) {
       results = _applyAdvancedFilters(results);
       _isAdvancedSearchActive = true;
@@ -379,7 +404,6 @@ class AppState extends ChangeNotifier {
         return false;
       }
 
-      // Price filter (extract number from price string like "Rp.40k")
       String priceStr = place.price.replaceAll(RegExp(r'[^0-9]'), '');
       int priceRaw = int.tryParse(priceStr) ?? 0;
 
@@ -392,7 +416,6 @@ class AppState extends ChangeNotifier {
         return false;
       }
 
-      // Distance filter - perbaikan parsing distance
       String distanceStr = place.distance.replaceAll(RegExp(r'[^0-9.]'), '');
       double distance = double.tryParse(distanceStr) ?? 0;
 
@@ -641,4 +664,149 @@ class AppState extends ChangeNotifier {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
   }
+
+  Future<void> reloadPlaceFromService(String placeId) async {
+    try {
+      // Ambil data place terbaru dari PlaceService (sudah termasuk rating yang ter-update)
+      final updatedPlace = await PlaceService.getPlaceById(placeId);
+
+      if (updatedPlace != null) {
+        // Hitung ulang distance jika diperlukan
+        Position? position;
+        try {
+          position = await UserPositionService.getCurrentPosition();
+        } catch (e) {
+          print('Error getting position: $e');
+        }
+
+        Place finalPlace = updatedPlace;
+        if (position != null) {
+          final distance = await DistanceService.getDistance(
+            userLat: position.latitude,
+            userLng: position.longitude,
+            placeLat: updatedPlace.location.lat,
+            placeLng: updatedPlace.location.lng,
+          );
+          finalPlace = updatedPlace.copyWith(distance: distance);
+        }
+
+        // Update place di semua list yang ada
+        _updatePlaceInAllLists(finalPlace);
+
+        setFilter(_selectedFilter);
+
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error reloading place from service: $e');
+    }
+  }
+
+  void _updatePlaceInAllLists(Place updatedPlace) {
+    // Update di _places
+    final mainIndex = _places.indexWhere((place) => place.id == updatedPlace.id);
+    if (mainIndex != -1) {
+      _places[mainIndex] = updatedPlace;
+    }
+
+    // Update di _filteredPlaces
+    final filteredIndex = _filteredPlaces.indexWhere((place) => place.id == updatedPlace.id);
+    if (filteredIndex != -1) {
+      _filteredPlaces[filteredIndex] = updatedPlace;
+    }
+
+    // Update di _searchResults
+    final searchIndex = _searchResults.indexWhere((place) => place.id == updatedPlace.id);
+    if (searchIndex != -1) {
+      _searchResults[searchIndex] = updatedPlace;
+    }
+
+    // Update current place jika sedang dilihat
+    if (_currentPlace?.id == updatedPlace.id) {
+      _currentPlace = updatedPlace;
+    }
+
+    // Update di recent places
+    for (int i = 0; i < _recentPlaces.length; i++) {
+      if (_recentPlaces[i].place.id == updatedPlace.id) {
+        _recentPlaces[i] = RecentPlace(
+          place: updatedPlace,
+          visitedAt: _recentPlaces[i].visitedAt,
+        );
+      }
+    }
+  }
+
+  Place? _currentPlace;
+  Place? get currentPlace => _currentPlace;
+
+  void setCurrentPlace(Place place) {
+    _currentPlace = place;
+    notifyListeners();
+  }
+
+  void removeReview(String placeId, String userId) {
+    if (_reviews.containsKey(placeId)) {
+      _reviews[placeId]!.removeWhere((review) => review.userId == userId);
+      notifyListeners();
+    }
+  }
+
+  Future<void> checkLabelChangeAndNotify(Place place) async {
+    // Notifikasi DEBUG
+    await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: 1002,
+        channelKey: 'label_changes',
+        title: 'Your destination atmosphere now!',
+        body: 'watched label: "$_watchedLabel"\nplace label now: "${place.label}"',
+        notificationLayout: NotificationLayout.Default,
+      ),
+      actionButtons: [
+        NotificationActionButton(
+          key: 'DISMISS',
+          label: 'Dismiss',
+        ),
+        NotificationActionButton(
+          key: 'SEE_RECOMMENDATION',
+          label: 'See Recommendation',
+          actionType: ActionType.Default,
+        ),
+      ],
+    );
+
+    if (_labelNotified || place.id != _watchedPlaceId || _watchedLabel == null) return;
+
+    if (place.label != _watchedLabel) {
+      _labelNotified = true;
+
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1001,
+          channelKey: 'label_changes',
+          title: 'Your destination atmosphere changed!',
+          body: 'It changed from "$_watchedLabel" to "${place.label}".',
+          notificationLayout: NotificationLayout.Default,
+        ),
+        actionButtons: [
+          NotificationActionButton(
+            key: 'DISMISS',
+            label: 'Dismiss',
+          ),
+          NotificationActionButton(
+            key: 'SEE_RECOMMENDATION',
+            label: 'See Recommendation',
+            actionType: ActionType.Default,
+          ),
+        ],
+      );
+    }
+  }
+
+  void applyLabelOnlySearch(String label) {
+    _searchResults = _places.where((place) => place.label == label).toList();
+    notifyListeners();
+  }
+
+
 }

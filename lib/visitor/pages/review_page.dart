@@ -20,6 +20,7 @@ class _ReviewPageState extends State<ReviewPage> {
   late final String _userId;
   List<String> _footageUrls = [];
   final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -166,8 +167,10 @@ class _ReviewPageState extends State<ReviewPage> {
         }
 
         if (pickedFile != null) {
+          setState(() => _isUploading = true);
           final urls = await appState.uploadMultipleFootage([pickedFile]);
           setState(() {
+            _isUploading = false;
             if (isReplace) {
               _footageUrls = urls;
             } else {
@@ -179,27 +182,6 @@ class _ReviewPageState extends State<ReviewPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking from camera: $e')),
-      );
-    }
-  }
-
-  Future<void> _pickFromGallery(AppState appState, bool isReplace) async {
-    try {
-      final List<XFile> pickedFiles = await _picker.pickMultipleMedia();
-
-      if (pickedFiles.isNotEmpty) {
-        final urls = await appState.uploadMultipleFootage(pickedFiles);
-        setState(() {
-          if (isReplace) {
-            _footageUrls = urls;
-          } else {
-            _footageUrls.addAll(urls);
-          }
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking from gallery: $e')),
       );
     }
   }
@@ -217,8 +199,10 @@ class _ReviewPageState extends State<ReviewPage> {
           .toList();
 
       if (xFiles.isNotEmpty) {
+        setState(() => _isUploading = true);
         final urls = await appState.uploadMultipleFootage(xFiles);
         setState(() {
+          _isUploading = false;
           if (isReplace) {
             _footageUrls = urls;
           } else {
@@ -383,21 +367,33 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
             ),
             const SizedBox(height: 16),
-            if (_footageUrls.isEmpty)
-              ElevatedButton.icon(
-                onPressed: () => _showMediaSourceDialog(appState),
-                icon: const Icon(Icons.upload),
-                label: const Text('Upload Footage'),
+            if (_isUploading)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: const [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 8),
+                    Text('Uploading footage...'),
+                  ],
+                ),
               )
-            else if (widget.existingReview != null)
-              TextButton.icon(
-                onPressed: () => _showMediaSourceDialog(appState, isReplace: true),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Replace Footage'),
-              ),
-            const SizedBox(height: 16),
-            if (_footageUrls.isNotEmpty) _buildMediaGrid(),
-            const SizedBox(height: 32),
+            else ...[
+              if (_footageUrls.isEmpty)
+                ElevatedButton.icon(
+                  onPressed: () => _showMediaSourceDialog(appState),
+                  icon: const Icon(Icons.upload),
+                  label: const Text('Upload Footage'),
+                )
+              else if (widget.existingReview != null)
+                TextButton.icon(
+                  onPressed: () => _showMediaSourceDialog(appState, isReplace: true),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Replace Footage'),
+                ),
+              if (_footageUrls.isNotEmpty) _buildMediaGrid(),
+              const SizedBox(height: 32),
+            ],
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -420,14 +416,45 @@ class _ReviewPageState extends State<ReviewPage> {
                       footage: _footageUrls,
                     );
 
-                    if (widget.existingReview != null) {
-                      appState.updateReview(place.id, review);
-                    } else {
-                      appState.addReview(place.id, review);
+                    bool success = false;
+
+                    try {
+                      await appState.saveReviewToFirestore(place.id, review);
+
+                      if (widget.existingReview != null) {
+                        appState.updateReview(place.id, review);
+                      } else {
+                        appState.addReview(place.id, review);
+                      }
+
+                      await appState.reloadPlaceFromService(place.id);
+                      success = true;
+
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
                     }
 
-                    await appState.saveReviewToFirestore(place.id, review);
-                    Navigator.pop(context, true);
+                    try {
+                      await appState.reloadPlaceFromService(place.id);
+                    } catch (_) {
+                      // optional: log silently
+                    }
+
+                    if (success) {
+                      Navigator.pop(context, {
+                        'refresh': true,
+                        'goReviewTab': true,
+                        'showMessage': widget.existingReview != null
+                            ? 'Review updated successfully!'
+                            : 'Review submitted successfully!',
+                      });
+                    }
                   }
                 },
                 child: Text(

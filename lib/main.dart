@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,6 +19,9 @@ import 'visitor/constants/app_constants.dart';
 import 'visitor/theme/app_theme.dart';
 import 'visitor/utils/error_handler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'visitor/pages/view_all_places_page.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +29,49 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+    if (!isAllowed) {
+      AwesomeNotifications().requestPermissionToSendNotifications();
+    }
+  });
+
+  await AwesomeNotifications().initialize(
+    null,
+    [
+      NotificationChannel(
+        channelKey: 'label_changes',
+        channelName: 'Label Change Notifications',
+        channelDescription: 'Notifies when label changes after open in maps',
+        defaultColor: Colors.teal,
+        importance: NotificationImportance.High,
+        channelShowBadge: true,
+      ),
+    ],
+  );
+
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: (ReceivedAction action) async {
+      if (action.buttonKeyPressed == 'SEE_RECOMMENDATION') {
+        final ctx = navigatorKey.currentContext;
+        if (ctx != null) {
+          final appState = Provider.of<AppState>(ctx, listen: false);
+          final labelToSearch = appState.watchedLabel;
+          navigatorKey.currentState?.pushNamedAndRemoveUntil(
+            '/',
+                (route) => false,
+            arguments: {
+              'filterByLabel': labelToSearch,
+            },
+          );
+        }
+        // navigatorKey.currentState?.pushNamed('/recommendation');
+        return;
+      }
+      return;
+    },
+  );
+
   runApp(const MyApp());
 }
 
@@ -38,6 +85,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<AppState>(
         builder: (context, appState, child) {
           return MaterialApp(
+            navigatorKey: navigatorKey,
             title: AppStrings.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
@@ -58,6 +106,7 @@ class MyApp extends StatelessWidget {
               AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState),
               AppRoutes.favorites: (context) => _buildAuthGuard(const FavoritePlacesPage(), appState),
               AppRoutes.review: (context) => _buildAuthGuard(const ReviewPage(), appState),
+              AppRoutes.viewAllPlaces: (context) => _buildAuthGuard(const ViewAllPlacesPage(), appState),
             },
 
             // Route generator for dynamic routes (with arguments)
@@ -81,7 +130,7 @@ class MyApp extends StatelessWidget {
 
                   print('DEBUG Main: Valid Place arguments, creating SelectedPlacePage');
                   return MaterialPageRoute(
-                    builder: (context) => const SelectedPlacePage(),
+                    builder: (context) => SelectedPlacePage(),
                     settings: settings, // Pass settings with arguments
                   );
 

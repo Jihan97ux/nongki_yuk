@@ -23,16 +23,20 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    compileSdk = 35
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.nongki_yuk"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 23
+        targetSdk = 35
+//        minSdk = flutter.minSdkVersion
+//        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
+
         // Enable R8 full mode
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
@@ -85,4 +89,5 @@ flutter {
 dependencies {
     // Add performance monitoring
     implementation("com.google.firebase:firebase-perf-ktx:20.5.2")
+//    implementation("me.carda.awesome:notifications:0.8.0")
 }

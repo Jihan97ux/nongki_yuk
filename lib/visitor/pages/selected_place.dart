@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/place_model.dart';
@@ -12,8 +14,9 @@ import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
 class SelectedPlacePage extends StatefulWidget {
-  final Place? place;
-  const SelectedPlacePage({super.key, this.place});
+  Place? place;
+  final int initialTabIndex;
+  SelectedPlacePage({super.key, this.place, this.initialTabIndex = 0});
   @override
   State<SelectedPlacePage> createState() => _SelectedPlacePageState();
 }
@@ -25,10 +28,33 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
   bool _loadingReviews = true;
   bool _reviewsLoaded = false;
 
+  late Place currentPlace;
+  Timer? _labelCheckOnceTimer;
+
   @override
   void initState() {
     super.initState();
+    _tabIndex = widget.initialTabIndex;
+    _loadReviews();
+
+    currentPlace = widget.place!;
+
+    final now = DateTime.now();
+    final nextHour = DateTime(now.year, now.month, now.day, now.hour + 1);
+    final delay = nextHour.difference(now);
+
+    _labelCheckOnceTimer = Timer(delay, () async {
+      final appState = Provider.of<AppState>(context, listen: false);
+      await appState.checkLabelChangeAndNotify(currentPlace);
+    });
   }
+
+  @override
+  void dispose() {
+    _labelCheckOnceTimer?.cancel();
+    super.dispose();
+  }
+
 
   void _onReviewTabTapped() {
     setState(() => _tabIndex = 1);
@@ -104,6 +130,39 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
     }
   }
 
+  void _refreshPlaceAndStayInReview(Place place) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final appState = Provider.of<AppState>(context, listen: false);
+      await appState.reloadPlaceFromService(place.id);
+
+      final updatedPlace = appState.getPlaceById(place.id) ?? place;
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SelectedPlacePage(
+            place: updatedPlace,
+            initialTabIndex: 1,
+          ),
+          settings: RouteSettings(arguments: updatedPlace),
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context);
+      ErrorHandler.showErrorSnackBar(context, 'Failed to refresh place');
+    }
+  }
+
   Future<void> _navigateToReviewPage(BuildContext context, Place place, {Review? existingReview}) async {
     final result = await Navigator.push(
       context,
@@ -112,10 +171,33 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
         settings: RouteSettings(arguments: place),
       ),
     );
+    if (result is Map && result['refresh'] == true) {
+      _refreshPlaceAndStayInReview(place);
 
-    // If review was submitted/updated, reload reviews
-    if (result == true && _tabIndex == 1) {
-      _loadReviews();
+      if (result['showMessage'] != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['showMessage']),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+
+  }
+
+  Future<void> _reloadPlaceRating(Place place) async {
+    try {
+      final appState = Provider.of<AppState>(context, listen: false);
+      await appState.reloadPlaceFromService(place.id);
+
+      final updatedPlace = appState.currentPlace;
+      if (updatedPlace != null && mounted) {
+        setState(() {
+        });
+      }
+    } catch (e) {
+      print('Error reloading place rating: $e');
     }
   }
 
@@ -141,6 +223,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
     }
     final appState = Provider.of<AppState>(context);
     final reviews = appState.getReviews(currentPlace.id);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -422,6 +505,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                             ),
                             onPressed: () async {
                               final appState = Provider.of<AppState>(context, listen: false);
+                              appState.setCurrentPlace(currentPlace!);
                               final currentUser = appState.currentUser;
                               if (currentUser == null) return;
 
@@ -594,15 +678,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                                                     icon: const Icon(Icons.more_vert),
                                                     onSelected: (value) async {
                                                       if (value == 'edit') {
-                                                        await Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (_) => ReviewPage(existingReview: review),
-                                                            settings: RouteSettings(arguments: currentPlace),
-                                                          ),
-                                                        );
-                                                        _reviewsLoaded = false;
-                                                        _loadReviews();
+                                                        await _navigateToReviewPage(context, currentPlace!, existingReview: review);
                                                       } else if (value == 'delete') {
                                                         _showDeleteDialog(context, review, currentPlace!);
                                                       }
@@ -930,6 +1006,9 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () async {
+                          final appState = Provider.of<AppState>(context, listen: false);
+                          appState.trackLabelChange(currentPlace.id, currentPlace.label);
+
                           final lat = place.location.lat;
                           final lng = place.location.lng;
                           final name = Uri.encodeComponent(place.title);
@@ -1011,39 +1090,58 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
             onPressed: () async {
               Navigator.pop(context);
 
-              setState(() {
-                _reviews.removeWhere((r) => r.userId == review.userId);
-              });
-
               try {
-                // Delete dari Firestore di background
-                await FirebaseFirestore.instance
+                final appState = Provider.of<AppState>(context, listen: false);
+
+                final reviewQuery = await FirebaseFirestore.instance
                     .collection('places')
                     .doc(place.id)
                     .collection('reviews')
                     .where('userId', isEqualTo: review.userId)
-                    .get()
-                    .then((snapshot) async {
-                  for (var doc in snapshot.docs) {
-                    await doc.reference.delete();
-                  }
-                });
+                    .get();
+
+                for (var doc in reviewQuery.docs) {
+                  await doc.reference.delete();
+                }
 
                 if (mounted) {
+                  appState.removeReview(place.id, review.userId);
+
+                  _refreshPlaceAndStayInReview(place);
+
                   ErrorHandler.showSuccessSnackBar(context, 'Review deleted successfully');
                 }
               } catch (e) {
-                // Jika gagal, restore review ke UI dan reload
                 if (mounted) {
-                  _reviewsLoaded = false;
-                  _loadReviews();
                   ErrorHandler.showErrorSnackBar(context, 'Failed to delete review');
+                  print('Error deleting review: $e');
                 }
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _handleReviewUpdate(Place place) async {
+    // Reload place data dari server
+    final appState = Provider.of<AppState>(context, listen: false);
+    await appState.reloadPlaceFromService(place.id);
+
+    // Get updated place
+    final updatedPlace = appState.places.firstWhere(
+          (p) => p.id == place.id,
+      orElse: () => place,
+    );
+
+    // Full page refresh
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectedPlacePage(place: updatedPlace),
+        settings: RouteSettings(arguments: updatedPlace),
       ),
     );
   }

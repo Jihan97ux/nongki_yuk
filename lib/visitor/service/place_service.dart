@@ -90,7 +90,7 @@ class PlaceService {
       totalRating += review.rating;
     }
 
-    return totalRating / reviews.length;
+    return double.parse((totalRating / reviews.length).toStringAsFixed(1));
   }
 
   // Save review to Firestore (moved from other service)

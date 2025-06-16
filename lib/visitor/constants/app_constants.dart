@@ -217,6 +217,7 @@ class AppRoutes {
   static const String search = '/search';
   static const String recentPlaces = '/recent-places';
   static const String settings = '/settings'; // Added settings route
+  static const String viewAllPlaces = '/view-all-places';
 }
 
 // Input Validation

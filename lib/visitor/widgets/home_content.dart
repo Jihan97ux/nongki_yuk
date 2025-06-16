@@ -5,6 +5,7 @@ import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../utils/error_handler.dart';
 import 'content_card.dart';
+import '../pages/selected_place.dart';
 
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
@@ -14,6 +15,23 @@ class HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<HomeContent> {
+  String? _initialLabelFilter;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Tangkap argument dari route '/'
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map && args['filterByLabel'] != null) {
+      _initialLabelFilter = args['filterByLabel'] as String;
+
+      final appState = Provider.of<AppState>(context, listen: false);
+      appState.setAdvancedSearchActive(true);
+      appState.applyLabelOnlySearch(_initialLabelFilter!);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +69,7 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to all places page
+                      Navigator.pushNamed(context, AppRoutes.viewAllPlaces);
                     },
                     child: Text(
                       AppStrings.viewAll,
