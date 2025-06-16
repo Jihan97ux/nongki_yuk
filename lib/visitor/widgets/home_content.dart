@@ -51,7 +51,7 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to all places page
+                      Navigator.pushNamed(context, AppRoutes.viewAllPlaces);
                     },
                     child: Text(
                       AppStrings.viewAll,

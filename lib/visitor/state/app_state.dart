@@ -164,6 +164,8 @@ class AppState extends ChangeNotifier {
   // Theme Getters
   bool get isDarkMode => _isDarkMode;
 
+  List<Place> get popularPlaces => _places.where((place) => place.rating >= 4.0).toList()..sort((a, b) => b.rating.compareTo(a.rating));
+
   // Authentication methods
   Future<void> signIn(String email, String password) async {
     _authStatus = AuthStatus.loading;

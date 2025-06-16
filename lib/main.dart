@@ -12,6 +12,7 @@ import 'visitor/pages/recent_places_page.dart';
 import 'visitor/pages/settings_page.dart';
 import 'visitor/pages/favorite_places_page.dart';
 import 'visitor/pages/review_page.dart';
+import 'visitor/pages/view_all_places_page.dart';
 import 'visitor/models/place_model.dart';
 import 'visitor/state/app_state.dart';
 import 'visitor/constants/app_constants.dart';
@@ -58,6 +59,7 @@ class MyApp extends StatelessWidget {
               AppRoutes.settings: (context) => _buildAuthGuard(const SettingsPage(), appState),
               AppRoutes.favorites: (context) => _buildAuthGuard(const FavoritePlacesPage(), appState),
               AppRoutes.review: (context) => _buildAuthGuard(const ReviewPage(), appState),
+              AppRoutes.viewAllPlaces: (context) => _buildAuthGuard(const ViewAllPlacesPage(), appState),
             },
 
             // Route generator for dynamic routes (with arguments)
