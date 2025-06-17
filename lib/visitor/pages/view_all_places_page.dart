@@ -14,27 +14,50 @@ class ViewAllPlacesPage extends StatelessWidget {
     final List<Place> places = appState.popularPlaces;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Popular Places'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        iconTheme: Theme.of(context).appBarTheme.iconTheme,
-        elevation: 0,
-      ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: places.length,
-          itemBuilder: (context, index) {
-            final place = places[index];
-            return _PlaceGridCard(place: place);
-          },
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Popular Places',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      textAlign: TextAlign.center,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.75,
+                  ),
+                  itemCount: places.length,
+                  itemBuilder: (context, index) {
+                    final place = places[index];
+                    return _PlaceGridCard(place: place);
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
