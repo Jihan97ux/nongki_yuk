@@ -30,23 +30,13 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
 
   late Place currentPlace;
   Timer? _labelCheckOnceTimer;
+  bool _timerInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _tabIndex = widget.initialTabIndex;
     _loadReviews();
-
-    currentPlace = widget.place!;
-
-    final now = DateTime.now();
-    final nextHour = DateTime(now.year, now.month, now.day, now.hour + 1);
-    final delay = nextHour.difference(now);
-
-    _labelCheckOnceTimer = Timer(delay, () async {
-      final appState = Provider.of<AppState>(context, listen: false);
-      await appState.checkLabelChangeAndNotify(currentPlace);
-    });
   }
 
   @override
@@ -210,17 +200,32 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
 
   @override
   Widget build(BuildContext context) {
-    Place? currentPlace = widget.place;
-    if (currentPlace == null) {
+    Place? resolvedPlace = widget.place;
+    if (resolvedPlace == null) {
       final route = ModalRoute.of(context);
       final arguments = route?.settings.arguments;
       if (arguments != null && arguments is Place) {
-        currentPlace = arguments;
+        resolvedPlace = arguments;
       }
     }
-    if (currentPlace == null) {
+    if (resolvedPlace == null) {
       return _buildErrorPage(context, 'Place data not found');
     }
+
+    currentPlace = resolvedPlace;
+
+    if (!_timerInitialized) {
+      final now = DateTime.now();
+      final nextHour = DateTime(now.year, now.month, now.day, now.hour + 1);
+      final delay = nextHour.difference(now);
+
+      _labelCheckOnceTimer = Timer(delay, () async {
+        final appState = Provider.of<AppState>(context, listen: false);
+        await appState.checkLabelChangeAndNotify(currentPlace);
+      });
+      _timerInitialized = true;
+    }
+
     final appState = Provider.of<AppState>(context);
     final reviews = appState.getReviews(currentPlace.id);
 

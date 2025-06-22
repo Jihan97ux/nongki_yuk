@@ -32,7 +32,7 @@ class ViewAllPlacesPage extends StatelessWidget {
                     'Popular Places',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      textAlign: TextAlign.center,
+
                       fontSize: 22,
                     ),
                   ),

@@ -49,7 +49,7 @@ class FavoritePlacesPage extends StatelessWidget {
                         onTap: () {
                           Navigator.pushNamed(
                             context,
-                            '/selected_place', // Make sure this matches your route name
+                            AppRoutes.selectedPlace,
                             arguments: place,
                           );
                         },
