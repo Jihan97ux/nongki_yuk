@@ -1,6 +1,6 @@
 # Nongki Yuk! 🍹
 
-*An App to Discover Jakarta Selatan’s Most Popular Hangout Spots*
+*An App to Discover South Jakarta's Most Popular Hangout Spots*
 
 ## 📱 Description
 
@@ -9,7 +9,7 @@
 ### Key Features:
 
 * Crowd level prediction using historical Google Maps data
-* Crowd labels: **Comfy**, **Normal**, **Crowded**
+* Crowd labels: **Comfy**, **Normal (Sedang)**, **Crowded**
 * Smart recommendations for alternative spots
 * Location navigation & user reviews
 * Filters for price, rating, distance, atmosphere, and facilities
