@@ -1,21 +1,25 @@
 # Nongki Yuk! 🍹
-*Aplikasi Pemantauan Tempat Nongkrong Populer di Jakarta Selatan*
 
-## 📱 Deskripsi
-**Nongki Yuk!** adalah prototipe aplikasi mobile berbasis _user-centered design_ untuk membantu pengguna menemukan tempat hangout viral di Jakarta Selatan, berdasarkan **prediksi tingkat keramaian**.
+*An App to Discover Jakarta Selatan’s Most Popular Hangout Spots*
 
-Fitur utama:
-- Prediksi keramaian berdasarkan data historis Google Maps
-- Label keramaian: **Comfy**, **Sedang**, **Crowded**
-- Rekomendasi tempat alternatif
-- Navigasi lokasi & ulasan pengguna
-- Fitur filter: harga, rating, jarak, suasana, dan fasilitas
+## 📱 Description
+
+**Nongki Yuk!** is a mobile app prototype built with a *user-centered design* approach to help users find trending hangout spots in South Jakarta based on **crowd level predictions**.
+
+### Key Features:
+
+* Crowd level prediction using historical Google Maps data
+* Crowd labels: **Comfy**, **Normal**, **Crowded**
+* Smart recommendations for alternative spots
+* Location navigation & user reviews
+* Filters for price, rating, distance, atmosphere, and facilities
 
 ---
 
-## 🎥 Demo Video
-🎥 Demo Video 1  
-[Klik untuk menonton Demo 1](https://drive.google.com/file/d/1WK1BszLU16zPLoYw-wJa-T7_4M7J7Fhk/view?usp=drive_link)
+## 🎥 Demo Videos
 
-🎥 Demo Video 2  
-[Klik untuk menonton Demo 2](https://drive.google.com/file/d/1mEHqj42nvBjzgmQ5x4OwQ6WoYV6wO_eI/view?usp=drive_link)
+🎥 Demo Video 1
+[Click to watch Demo 1](https://drive.google.com/file/d/1WK1BszLU16zPLoYw-wJa-T7_4M7J7Fhk/view?usp=drive_link)
+
+🎥 Demo Video 2
+[Click to watch Demo 2](https://drive.google.com/file/d/1mEHqj42nvBjzgmQ5x4OwQ6WoYV6wO_eI/view?usp=drive_link)
