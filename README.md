@@ -15,7 +15,7 @@ Fitur utama:
 
 ## 🎥 Demo Video
 🎥 Demo Video 1  
-[Klik untuk menonton vid1.mp4](https://raw.githubusercontent.com/Jihan97ux/nongki_yuk_footage/main/vid1.mp4)
+[Klik untuk menonton Demo 1](https://drive.google.com/file/d/1WK1BszLU16zPLoYw-wJa-T7_4M7J7Fhk/view?usp=drive_link)
 
 🎥 Demo Video 2  
-[Klik untuk menonton vid2.mp4](https://raw.githubusercontent.com/Jihan97ux/nongki_yuk_footage/main/vid2.mp4)
+[Klik untuk menonton Demo 2](https://drive.google.com/file/d/1mEHqj42nvBjzgmQ5x4OwQ6WoYV6wO_eI/view?usp=drive_link)
