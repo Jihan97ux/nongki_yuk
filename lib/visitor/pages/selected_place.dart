@@ -283,7 +283,7 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                           builder: (context, appState, child) {
                             final isFavorite = appState.isFavorite(currentPlace!.id);
                             return _buildIconButton(
-                              icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                              icon: isFavorite ? Icons.bookmark : Icons.bookmark_border,
                               onPressed: () {
                                 appState.toggleFavorite(currentPlace!.id);
                                 final message = isFavorite
@@ -1006,8 +1006,8 @@ class _SelectedPlacePageState extends State<SelectedPlacePage> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
-                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.textPrimary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () async {

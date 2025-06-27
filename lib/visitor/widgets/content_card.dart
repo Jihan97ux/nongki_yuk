@@ -113,7 +113,7 @@ class ContentCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          isFavorite ? Icons.bookmark : Icons.bookmark_border,
                           color: isFavorite ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onPrimary,
                           size: AppDimensions.iconM,
                         ),

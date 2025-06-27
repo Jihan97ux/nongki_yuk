@@ -121,7 +121,7 @@ class HomeFooter extends StatelessWidget {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.favorite_border_outlined),
+                    const Icon(Icons.bookmark_border_outlined),
                     if (appState.favoritePlaces.isNotEmpty)
                       Positioned(
                         right: -6,
@@ -154,7 +154,7 @@ class HomeFooter extends StatelessWidget {
                 activeIcon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.favorite),
+                    const Icon(Icons.bookmark),
                     if (appState.favoritePlaces.isNotEmpty)
                       Positioned(
                         right: -6,
@@ -338,7 +338,7 @@ class HomeFooter extends StatelessWidget {
       _showInfoSnackBar(
         context,
         'No favorite places yet! ❤️ some places first.',
-        icon: Icons.favorite_border,
+        icon: Icons.bookmark_border,
       );
       return;
     }
@@ -383,7 +383,7 @@ class HomeFooter extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
                       child: Icon(
-                        Icons.favorite,
+                        Icons.bookmark,
                         color: Colors.red,
                         size: 20,
                       ),

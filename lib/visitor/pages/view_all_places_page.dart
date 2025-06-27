@@ -137,7 +137,7 @@ class _PlaceGridCard extends StatelessWidget {
                     appState.toggleFavorite(place.id);
                   },
                   child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    isFavorite ? Icons.bookmark : Icons.bookmark_border,
                     color: isFavorite ? Colors.red : Colors.white,
                   ),
                 ),

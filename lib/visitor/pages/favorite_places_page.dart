@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../constants/app_constants.dart';
 import '../widgets/home_footer.dart';
+import 'selected_place.dart';
 
 class FavoritePlacesPage extends StatelessWidget {
   const FavoritePlacesPage({super.key});
@@ -47,10 +48,12 @@ class FavoritePlacesPage extends StatelessWidget {
                       final place = favorites[index];
                       return InkWell(
                         onTap: () {
-                          Navigator.pushNamed(
+                          Navigator.push(
                             context,
-                            AppRoutes.selectedPlace,
-                            arguments: place,
+                            MaterialPageRoute(
+                              builder: (context) => SelectedPlacePage(place: place),
+                              settings: RouteSettings(arguments: place),
+                            ),
                           );
                         },
                         borderRadius: BorderRadius.circular(20),
@@ -118,7 +121,7 @@ class FavoritePlacesPage extends StatelessWidget {
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(right: 16),
-                                child: Icon(Icons.favorite, color: Colors.red, size: 22),
+                                child: Icon(Icons.bookmark, color: Colors.red, size: 22),
                               ),
                             ],
                           ),
