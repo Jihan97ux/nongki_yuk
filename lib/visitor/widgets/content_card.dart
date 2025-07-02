@@ -85,7 +85,7 @@ class ContentCard extends StatelessWidget {
                       child: Text(
                         place.label,
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.textWhite,
+                          color: _getLabelTextColor(place.label),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -333,8 +333,23 @@ class ContentCard extends StatelessWidget {
         return AppColors.crowdedLabel;
       case 'comfy':
         return AppColors.comfyLabel;
+      case 'normal':
+        return AppColors.normalLabel;
       default:
         return AppColors.primary;
+    }
+  }
+
+  Color _getLabelTextColor(String label) {
+    switch (label.toLowerCase()) {
+      case 'crowded':
+        return AppColors.crowdedLabelText;
+      case 'comfy':
+        return AppColors.comfyLabelText;
+      case 'normal':
+        return AppColors.normalLabelText;
+      default:
+        return AppColors.textWhite;
     }
   }
 }

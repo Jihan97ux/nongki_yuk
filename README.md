@@ -75,7 +75,7 @@ flutter_dotenv: ^5.1.0
 ## 📁 Project Structure
 
 ```
-TUBES-MOBILE-7/
+# NAME IT YOURSELF/
 ├── lib/
 │   ├── visitor/
 │   │   ├── constants/          # App constants and configurations

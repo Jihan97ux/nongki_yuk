@@ -28,7 +28,7 @@ class _FilterModalState extends State<FilterModal> {
   List<String> _selectedLabels = [];
   List<String> _selectedAmenities = [];
 
-  final List<String> _availableLabels = ['crowded', 'comfy'];
+  final List<String> _availableLabels = ['crowded', 'comfy', 'normal'];
   final List<String> _availableAmenities = [
     'WiFi', 'AC', 'Outdoor Seating', 'Parking', 'Cozy Interior',
     'Books', 'Garden View', 'Pet Friendly'
@@ -429,20 +429,39 @@ class _FilterModalState extends State<FilterModal> {
       runSpacing: AppDimensions.paddingS,
       children: _availableLabels.map((label) {
         final isSelected = _selectedLabels.contains(label);
+        Color backgroundColor;
+        Color textColor;
+        switch (label.toLowerCase()) {
+          case 'crowded':
+            backgroundColor = AppColors.crowdedLabel;
+            textColor = AppColors.crowdedLabelText;
+            break;
+          case 'comfy':
+            backgroundColor = AppColors.comfyLabel;
+            textColor = AppColors.comfyLabelText;
+            break;
+          case 'normal':
+            backgroundColor = AppColors.normalLabel;
+            textColor = AppColors.normalLabelText;
+            break;
+          default:
+            backgroundColor = Theme.of(context).colorScheme.background;
+            textColor = Theme.of(context).colorScheme.onSurface;
+        }
         return FilterChip(
           label: Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+              color: textColor,
               fontWeight: FontWeight.w600,
             ),
           ),
           selected: isSelected,
-          selectedColor: Theme.of(context).colorScheme.primary,
-          backgroundColor: Theme.of(context).colorScheme.background,
-          checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+          selectedColor: backgroundColor,
+          backgroundColor: backgroundColor,
+          checkmarkColor: textColor,
           side: BorderSide(
-            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).disabledColor,
+            color: isSelected ? backgroundColor : Theme.of(context).disabledColor,
           ),
           onSelected: (selected) {
             setState(() {

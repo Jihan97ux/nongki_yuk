@@ -114,15 +114,13 @@ class _PlaceGridCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: place.label.toLowerCase() == 'qrowded'
-                        ? Colors.red
-                        : Colors.yellow[700],
+                    color: _getLabelBackgroundColor(place.label),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     place.label,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: _getLabelTextColor(place.label),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -202,5 +200,31 @@ class _PlaceGridCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getLabelBackgroundColor(String label) {
+    switch (label.toLowerCase()) {
+      case 'crowded':
+        return AppColors.crowdedLabel;
+      case 'comfy':
+        return AppColors.comfyLabel;
+      case 'normal':
+        return AppColors.normalLabel;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getLabelTextColor(String label) {
+    switch (label.toLowerCase()) {
+      case 'crowded':
+        return AppColors.crowdedLabelText;
+      case 'comfy':
+        return AppColors.comfyLabelText;
+      case 'normal':
+        return AppColors.normalLabelText;
+      default:
+        return Colors.white;
+    }
   }
 }
