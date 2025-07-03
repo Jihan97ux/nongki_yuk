@@ -6,6 +6,9 @@
 
 **Nongki Yuk!** is a mobile app prototype built with a *user-centered design* approach to help users find trending hangout spots in South Jakarta based on **crowd level predictions**.
 
+## 🎥 Demo Videos
+[**Click to watch Demo**](https://drive.google.com/file/d/1tH0YyKVUPMJL93QOug0T48VASNI3x0Le/view?usp=sharing)
+
 ## 📱 Features
 
 ### 🏠 Core Features
@@ -61,13 +64,6 @@
 6. **Navigation** → Open in Google Maps with directions
 7. **Favorites** → Manage bookmarked places
    
----
-
-## 🎥 Demo Videos
-
-🎥 Demo Video 
-[Click to watch Demo](https://drive.google.com/file/d/1tH0YyKVUPMJL93QOug0T48VASNI3x0Le/view?usp=sharing)
-
 ---
 
 ## 🛠️ Technology Stack
