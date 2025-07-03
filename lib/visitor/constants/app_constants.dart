@@ -24,8 +24,14 @@ class AppColors {
   static const Color inputHint = Colors.grey;
 
   // Status colors
-  static const Color crowdedLabel = Colors.red;
-  static const Color comfyLabel = Color(0xFFFFC107);
+  static const Color crowdedLabel = Color(0xFFF4D50B); // background Crowded
+  static const Color comfyLabel = Color(0xFF7033B2);   // background Comfy
+  static const Color normalLabel = Color(0xFFEAD2E2);  // background Normal
+
+  // Label text colors
+  static const Color crowdedLabelText = Color(0xFF3A2D72); // text Crowded
+  static const Color comfyLabelText = Color(0xFFFFFFFF);    // text Comfy
+  static const Color normalLabelText = Color(0xFF5C269D);  // text Normal
 
   // Shadow
   static Color shadowColor = Colors.grey.withOpacity(0.3);
@@ -217,6 +223,7 @@ class AppRoutes {
   static const String search = '/search';
   static const String recentPlaces = '/recent-places';
   static const String settings = '/settings'; // Added settings route
+  static const String viewAllPlaces = '/view-all-places';
 }
 
 // Input Validation

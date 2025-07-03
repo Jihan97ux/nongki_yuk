@@ -20,6 +20,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late Animation<Offset> _slideAnimation;
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
+  bool _isUploading = false;
 
   @override
   void initState() {
